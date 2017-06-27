@@ -3,9 +3,6 @@
 
 #include "list.h"
 
-/*
- * 
-*/
 List create_list(void)
 {
     // create the head node
@@ -18,9 +15,7 @@ List create_list(void)
     return list;
 };
 
-/*
- *
-*/
+
 Iter_list append_list_generic(List *list, void *data, size_t sz)
 {
     // create the new node
@@ -136,27 +131,35 @@ void delete_list_p(List *list)
 
 void pop_front_list_p(List *list)
 {
+    // get the first element
     Iter_list first = first_list(*list);
 
+    // change the pointers
     list->head->next = first->next;
     first->next->self_p = &list->head->next;
 
+    // free the memory
     free(first->data);
     free(first);
 
+    // decrease the size
     --list->size;
 }
 
 Iter_list erase_list_p(List *list, Iter_list node)
 {
+    // get the next node
     Iter_list next = node->next;
 
+    // change pointers
     *node->self_p = next;
     next->self_p = node->self_p;
 
+    // free the memory
     free(node->data);
     free(node);
 
+    // decrease size
     --list->size;
 
     return next;
@@ -164,19 +167,27 @@ Iter_list erase_list_p(List *list, Iter_list node)
 
 Iter_list erase_seq_list_p(List *list, Iter_list beg, Iter_list end)
 {
+    // change pointers
     *beg->self_p = end;
 
+    // change the pointers of the end element
     if (end)
         end->self_p = beg->self_p;
     
+    // iterate through the sequence to erase
     while (beg != end)
     {
+        // store the next
         Iter_list next = beg->next;
 
+        // free the memory
         free(beg->data);
         free(beg);
 
+        // decrease size
         --list->size;
+
+        // next
         beg = next;
     }
     return beg;
