@@ -1,1 +1,8 @@
-Donation_System.pro.user
+# Qt-es
+*.pro.user
+
+# build directory
+build
+
+# vscode
+.vscode
