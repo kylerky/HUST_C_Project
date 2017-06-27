@@ -3,6 +3,9 @@
  * this file is the declaration of list related functions and structs
 */
 
+#ifndef LIST_H
+#define LIST_H
+
 #include <stddef.h>
 
 /*
@@ -268,3 +271,5 @@ Iter_list erase_list_p(List *list, Iter_list node);
  *          the iterator following the last removed element
 */
 Iter_list erase_seq_list_p(List *list, Iter_list beg, Iter_list end);
+
+#endif // LIST_H
