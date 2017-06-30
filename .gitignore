@@ -1,6 +1,9 @@
 # Qt-es
 *.pro.user
 
+# ignore QML pre-compiled files
+*.qmlc
+
 # build directory
 build
 

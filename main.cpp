@@ -1,17 +1,14 @@
-/*
- * main.cpp
- * this file is for starting the Qt event loop
- * and showing the GUI
- */
-
-#include "mainwindow.h"
-#include <QApplication>
+#include <QGuiApplication>
+#include <QQmlApplicationEngine>
 
 int main(int argc, char *argv[])
 {
-    QApplication a(argc, argv);
-    MainWindow w;
-    w.show();
+    QGuiApplication app(argc, argv);
 
-    return a.exec();
+    QQmlApplicationEngine engine;
+    engine.load(QUrl(QStringLiteral("qrc:/main.qml")));
+    if (engine.rootObjects().isEmpty())
+        return -1;
+
+    return app.exec();
 }
