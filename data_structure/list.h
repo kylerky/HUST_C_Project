@@ -258,6 +258,7 @@ Iter_list erase_list_p(List *list, Iter_list node);
 */
 #define erase_seq_list(list, beg, end) erase_seq_list_p(&(list), beg, end)
 
+
 /*
  * erase_seq_list_p
  * to erase a sequence of nodes in a list
@@ -271,5 +272,53 @@ Iter_list erase_list_p(List *list, Iter_list node);
  *          the iterator following the last removed element
 */
 Iter_list erase_seq_list_p(List *list, Iter_list beg, Iter_list end);
+
+
+// operations
+/*
+ * splice_list
+ * (shorthand for splice_list_p)
+ * transfer elements from one list to another
+ *
+ * @param
+ *          pos      the position before which to insert the elements     
+ *          other    the list to be inserted
+ *
+*/
+#define splice_list(this, pos, other) splice_list_p(&this ,pos, &other)
+
+/*
+ * splice_list_p
+ * transfer elements from one list to another
+ *
+ * @param
+ *          pos      the position before which to insert the elements     
+ *          other    the list to be inserted
+ *
+*/
+void splice_list_p(List *this, Iter_list pos, List *other);
+
+/*
+ * sort_list
+ * (shorthand for sort_list_p)
+ * sort a list
+ *
+ * @param
+ *          list    the list to be sorted
+ *          comp    the compare function
+ *
+*/
+#define sort_list(list, comp) sort_list_p(&list, comp)
+
+/*
+ * sort_list_p
+ * sort a list
+ *
+ * @param
+ *          list    the list to be sorted
+ *          comp    the compare function
+ *
+*/
+void sort_list_p(List *list, int (*comp)(void*, void*));
 
 #endif // LIST_H

@@ -35,16 +35,26 @@ Iter_list append_list_generic(List *list, void *data, size_t sz)
     return new_node;
 }
 
-Iter_list insert_before_list_generic(List *list, Iter_list node, void *data, size_t sz)
+Iter_list insert_before_list_generic(List *list, Iter_list pos, void *data, size_t sz)
 {
     // create new node
     Iter_list new_node = (Iter_list) malloc(sizeof(struct Node));
-    *(node->self_p) = new_node;
+
+    // get pointer pointed to the node itself
+    Iter_list *last_next = list->last;
+    if (pos)
+    {
+        last_next = pos->self_p;
+        pos->self_p = &(new_node->next);
+    }
+    else
+        list->last = &(new_node->next);
 
     // change pointers
-    new_node->self_p = node->self_p;
-    new_node->next = node;
-    node->self_p = &(new_node->next);
+    new_node->next = pos;
+
+    *last_next = new_node;
+    new_node->self_p = last_next;
 
     // allocate space and copy data
     new_node->data = malloc(sz);
@@ -63,15 +73,17 @@ Iter_list insert_seq_before_list_generic(List *list, Iter_list pos, void *beg, v
     Iter_list first_inserted = (Iter_list)pos;
 
     // get pointer pointed to the node itself
-    Iter_list *last_next = pos->self_p;
-    // get the first pos
+    Iter_list *last_next = list->last;
+    if (pos)
+        last_next = pos->self_p;
 
     int first_flag=1; // flag the first
     // initialize the pointer
+    Iter_list new_node;
     for (char *first = (char*)beg, *last = (char*)end; first != last; first+=sz)
     {
         // create new node
-        Iter_list new_node = (Iter_list)malloc(sizeof(struct Node));
+        new_node = (Iter_list)malloc(sizeof(struct Node));
 
         // change the previous node's pointer
 
@@ -96,6 +108,10 @@ Iter_list insert_seq_before_list_generic(List *list, Iter_list pos, void *beg, v
     }
 
     *last_next = pos;
+    if (pos)
+        pos->self_p = &(new_node->next);
+    else
+        list->last = &(new_node->next);
 
     list->size += (end-beg)/sz;
 
@@ -191,4 +207,87 @@ Iter_list erase_seq_list_p(List *list, Iter_list beg, Iter_list end)
         beg = next;
     }
     return beg;
+}
+
+void splice_list_p(List *this, Iter_list pos, List *other)
+{
+    // get the self pointer
+    Iter_list *self_p = this->last;
+    if (pos)
+        self_p = pos->self_p;
+
+    // change the pointers
+    *self_p = other->head->next;
+    other->head->next->self_p = self_p;
+
+    *other->last = pos;
+    if (pos)
+        pos->self_p = other->last;
+    else
+        this->last = other->last;
+
+    this->size += other->size;
+
+    // free the head node
+    free(other->head);
+    other->head = NULL;
+    other->size = 0;
+    other->last = NULL;
+}
+
+void sort_list_p(List *list, int (*comp)(void*, void*))
+{
+    if (list->size < 2)
+        return;
+
+    for (size_t sz = 1; sz < list->size; sz *= 2)
+    {
+
+        Iter_list left = list->head->next, right = left;
+
+        // bottom-up merge sort
+        while(1)
+        {
+            // find the beginning of the right
+            for (unsigned i = 0; right && i != sz; ++i)
+                next_list(right);
+
+            // the right does not exist
+            if (!right)
+                break;
+
+            // merge
+            size_t lcnt = 0, rcnt=0; // boundary
+            Iter_list *last = left->self_p;
+
+            while (lcnt < sz || (right && rcnt < sz))
+            {
+                if (lcnt >= sz || (right && rcnt < sz && comp(right->data, left->data)))
+                {
+                    *last = right;
+                    right->self_p = last;
+
+                    last = &(right->next);
+                    next_list(right);
+                    ++rcnt;
+                }
+                else
+                {
+                    *last = left;
+                    left->self_p = last;
+
+                    last = &(left->next);
+                    next_list(left);
+                    ++lcnt;
+                }
+            }
+            // next
+            if (right)
+                right->self_p = last;
+            *last = right;
+            left = right;
+
+        }
+        
+    }
 }
