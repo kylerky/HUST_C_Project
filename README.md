@@ -10,6 +10,6 @@ If you are one of the freshmen in HUST and are struggling to finish the assignme
 
 ## HOW-to build
 
-To build this project, you will need a copy of qt installed. I am using Qt 5.8.0 (GCC).
+To build this project, you will need a copy of qt installed. I am using Qt 5.9.1 (GCC).
 
 Once you have Qt installed, just click the green button and you are good to go.

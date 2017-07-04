@@ -3,7 +3,9 @@ TEMPLATE = app
 QT += qml quick
 CONFIG += c++14
 
-SOURCES += main.cpp
+SOURCES += main.cpp \
+    treedata.cpp \
+    data_structure/*
 
 RESOURCES += qml.qrc
 
@@ -28,3 +30,6 @@ DEFINES += QT_DEPRECATED_WARNINGS
 qnx: target.path = /tmp/$${TARGET}/bin
 else: unix:!android: target.path = /opt/$${TARGET}/bin
 !isEmpty(target.path): INSTALLS += target
+
+HEADERS += \
+    treedata.hpp
