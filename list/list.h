@@ -296,7 +296,7 @@ Iter_list erase_seq_list_p(List *list, Iter_list beg, Iter_list end);
  *          other    the list to be inserted
  *
 */
-void splice_list_p(List *this, Iter_list pos, List *other);
+void splice_list_p(List *th, Iter_list pos, List *other);
 
 /*
  * sort_list
