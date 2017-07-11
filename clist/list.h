@@ -1,4 +1,4 @@
-/*
+ /*
  * list.h
  * this file is the declaration of list related functions and structs
 */

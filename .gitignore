@@ -1,5 +1,5 @@
 # Qt-es
-*.pro.user
+*.user
 
 # ignore QML pre-compiled files
 *.qmlc

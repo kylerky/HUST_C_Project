@@ -1,7 +1,8 @@
 #ifndef TREEDATA_HPP
 #define TREEDATA_HPP
-
-#include "../list/list.h"
+extern "C" {
+    #include "list.h"
+}
 #include <QList>
 #include <QAbstractItemModel>
 

@@ -1,6 +1,8 @@
 ﻿#include "treeitem.hpp"
-#include "../list/list.h"
-#include "../list/data_def.h"
+extern "C" {
+    #include "list.h"
+    #include "data_def.h"
+}
 #include <stdlib.h>
 
 namespace HUST_C {
@@ -144,7 +146,7 @@ namespace HUST_C {
     RootTreeItem::RootTreeItem(TreeItem *parent) : TreeItem(parent){}
     RootTreeItem::~RootTreeItem(){}
 
-    struct School *data()
+    void *RootTreeItem::data() const
     {
         return nullptr;
     }

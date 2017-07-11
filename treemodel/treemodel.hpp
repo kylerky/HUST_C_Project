@@ -13,7 +13,7 @@ namespace HUST_C {
     public:
         enum RoleNames {
             SchoolNameRole = Qt::UserRole,
-            SchoolPricipalRole = Qt::UserRole+1,
+            SchoolPrincipalRole = Qt::UserRole+1,
             SchoolTeleRole = Qt::UserRole+2,
             ClassSchoolRole = Qt::UserRole+3,
             ClassInstructorRole = Qt::UserRole+4,
@@ -22,7 +22,7 @@ namespace HUST_C {
             ClassStudentCntRole = Qt::UserRole+7
         };
 
-        TreeModel(QObject *parent);
+        TreeModel(QObject *parent = nullptr);
         ~TreeModel();
 
 
@@ -41,20 +41,34 @@ namespace HUST_C {
 
         // editing, resizing
         Qt::ItemFlags flags(const QModelIndex &index) const override;
+
         bool setData(const QModelIndex &index, const QVariant &value,
                      int role = Qt::EditRole) override;
 
+
         bool insertRows(int position, int rows,
                         const QModelIndex &parent = QModelIndex()) override;
+
+
+    public slots:
+
+        bool setSchoolData(const QModelIndex &index, const QVariant &val,
+                           QString role);
+
+        bool setClassData(const QModelIndex &index, const QVariant &val,
+                           QString role);
+
+        bool insertSchoolRows(int position, int rows,
+                              const QModelIndex &parent);
+
+        bool insertClassRows(int position, int rows,
+                             const QModelIndex &parent);
+
         bool removeRows(int position, int rows,
                         const QModelIndex &parent = QModelIndex()) override;
 
-
-        void initialize();
-
     protected:
         virtual QHash<int, QByteArray> roleNames() const override;
-
     private:
         QHash<int, QByteArray> m_roleNames;
 

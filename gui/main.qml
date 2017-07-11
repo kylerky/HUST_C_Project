@@ -4,6 +4,7 @@ import QtQuick.Layouts 1.3
 import QtQuick.Controls 1.4
 import QtQuick.Controls 2.2
 import "."
+import hust.kyle 1.0
 
 ApplicationWindow {
     id: root
@@ -16,7 +17,6 @@ ApplicationWindow {
     y: (Screen.height-height)/2
 
     Row {
-
         anchors.fill: parent
 
         Rectangle{
@@ -57,14 +57,37 @@ ApplicationWindow {
 
 
         RowLayout {
+
             spacing: 0
 
             width: parent.width-modesBar.width
             height: parent.height
-            TreeView {
-                Layout.fillHeight: true
-                Layout.preferredWidth: Screen.width * 0.1
+            Column {
+                anchors.fill: parent
+                onWindowChanged: {
+                    console.log(height);
+                }
 
+
+                Rectangle {
+                    height: parent.height*0.1
+                    color: "blue"
+                }
+
+                TreeView {
+                    TreeModel {
+                        id: treemodel
+                        onRowsInserted: {
+                            console.log("rows inserted");
+                        }
+                    }
+
+                    Layout.fillHeight: true
+                    Layout.preferredWidth: Screen.width * 0.1
+
+                    model: treemodel
+
+                }
             }
 
             StackLayout {
