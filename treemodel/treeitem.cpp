@@ -3,7 +3,7 @@ extern "C" {
     #include "list.h"
     #include "data_def.h"
 }
-#include <stdlib.h>
+#include <cstdlib>
 
 namespace HUST_C {
 
@@ -16,13 +16,11 @@ namespace HUST_C {
         m_parentItem = parent;
     }
 
-    TreeItem::TreeItem(Iter_list &iter, TreeItem *parent) : m_iter(iter), m_parentItem(parent){}
+    TreeItem::TreeItem(Iter_list &iter, TreeItem *parent)
+    : m_iter(iter), m_parentItem(parent){}
 
     TreeItem::~TreeItem()
     {
-        free(m_iter->data);
-        free(m_iter);
-        qDeleteAll(m_childItems);
     }
 
     TreeItem *TreeItem::child(int row)
@@ -73,10 +71,13 @@ namespace HUST_C {
     // ClassTreeItem::*
 
 
-    ClassTreeItem::ClassTreeItem(Iter_list &iter, TreeItem *parent):TreeItem(iter, parent){}
+    ClassTreeItem::ClassTreeItem(Iter_list &iter, TreeItem *parent)
+    :TreeItem(iter, parent){}
+
     ClassTreeItem::~ClassTreeItem()
     {
         delete_list(reinterpret_cast<struct Classes*>(m_iter->data)->donors);
+        erase_list(reinterpret_cast<struct School *>(m_parentItem->m_iter->data)->classes, m_iter);
     }
 
     void *ClassTreeItem::data() const
@@ -105,7 +106,12 @@ namespace HUST_C {
     // SchoolTreeItem::*
 
     SchoolTreeItem::SchoolTreeItem(Iter_list &iter, TreeItem *parent):TreeItem(iter, parent){}
-    SchoolTreeItem::~SchoolTreeItem(){}
+    SchoolTreeItem::~SchoolTreeItem()
+    {
+        qDeleteAll(m_childItems);
+        delete reinterpret_cast<struct School*>(m_iter->data)->classes.head;
+        erase_list(reinterpret_cast<struct School *>(m_parentItem->m_iter->data)->classes, m_iter);
+    }
 
     void *SchoolTreeItem::data() const
     {
@@ -143,8 +149,20 @@ namespace HUST_C {
 
     // RootTreeItem::*
 
-    RootTreeItem::RootTreeItem(TreeItem *parent) : TreeItem(parent){}
-    RootTreeItem::~RootTreeItem(){}
+    RootTreeItem::RootTreeItem(TreeItem *parent) : TreeItem(parent)
+    {
+        m_iter = new struct Node();
+        auto p = new struct School();
+        p->classes = create_list();
+        m_iter->data = p;
+    }
+    RootTreeItem::~RootTreeItem()
+    {
+        qDeleteAll(m_childItems);
+        delete reinterpret_cast<struct School*>(m_iter->data)->classes.head;
+        delete reinterpret_cast<struct School*>(m_iter->data);
+        delete m_iter;        
+    }
 
     void *RootTreeItem::data() const
     {

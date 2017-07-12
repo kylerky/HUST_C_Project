@@ -169,7 +169,8 @@ Iter_list erase_list_p(List *list, Iter_list node)
 
     // change pointers
     *node->self_p = next;
-    next->self_p = node->self_p;
+    if (next)
+        next->self_p = node->self_p;
 
     // free the memory
     free(node->data);

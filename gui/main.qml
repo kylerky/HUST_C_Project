@@ -12,13 +12,13 @@ ApplicationWindow {
     visible: true
     width: Screen.width*0.8
     height: Screen.height*0.75
+    color: "black"
 
     x: (Screen.width-width)/2
     y: (Screen.height-height)/2
 
     Row {
         anchors.fill: parent
-
         Rectangle{
             id: modesBar
             height: parent.height
@@ -63,29 +63,83 @@ ApplicationWindow {
             width: parent.width-modesBar.width
             height: parent.height
             Column {
-                anchors.fill: parent
-                onWindowChanged: {
-                    console.log(height);
-                }
+                Layout.preferredWidth: parent.width*0.15
+                Layout.fillHeight: true
 
+                Row {
+                    id: treeBar
+                    height: parent.height*0.04
+                    width: parent.width
 
-                Rectangle {
-                    height: parent.height*0.1
-                    color: "blue"
-                }
-
-                TreeView {
-                    TreeModel {
-                        id: treemodel
-                        onRowsInserted: {
-                            console.log("rows inserted");
-                        }
+                    Text {
+                        text: "hello"
+                        height:parent.height
+                        width:parent.width*0.8
                     }
 
-                    Layout.fillHeight: true
-                    Layout.preferredWidth: Screen.width * 0.1
+                    Button {
+                        id: treeBarBtn
+                        cursorShape: Qt.PointingHandCursor
+                        height:parent.height
+                        width:parent.width*0.2
+                        onClicked: {
+                            treeModel.insertSchoolRows(0, 1, treeModel.getRootIndex());
+                        }
+                    }
+                }
 
-                    model: treemodel
+                Rectangle {
+                    height: parent.height - treeBar.height
+                    width: parent.width
+                    color: "black"
+                    TreeView {
+                        anchors.fill: parent
+                        TreeModel {
+                            id: treeModel
+                            onRowsInserted: {
+                                console.log("rows inserted");
+                            }
+                            onDataChanged: {
+                                console.log("changed");
+                            }
+                        }
+
+                        Layout.fillHeight: true
+                        Layout.preferredWidth: Screen.width * 0.1
+
+                        model: treeModel
+                        TableViewColumn {
+                            role: "schoolName"
+                            title: "Name"
+                        }
+
+                        rowDelegate: Rectangle {
+                            border.width: 1
+                            border.color: "black"
+                            width: parent.width
+                            height: 100
+                            color: "grey"
+                        }
+
+                        itemDelegate: Button {
+                            //anchors.fill: parent
+                            cursorShape: Qt.PointingHandCursor
+
+                            Text {
+                                //anchors.fill: parent
+
+                                color: "grey"
+                                text: "hi"
+                            }
+                            onClicked: {
+                                console.log("begin to set data");
+                                console.log(treeModel.insertClassRows(0, 1, treeModel.index(model.index, 0, treeModel.getRootIndex())));
+                                console.log("finish")
+                            }
+
+
+                        }
+                    }
 
                 }
             }

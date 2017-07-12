@@ -132,6 +132,11 @@ namespace HUST_C
     }
 
 
+    QModelIndex TreeModel::getRootIndex()
+    {
+        return QModelIndex();
+    }
+
     bool TreeModel::setSchoolData(const QModelIndex &index, const QVariant &val,
                        QString role)
     {
@@ -139,14 +144,15 @@ namespace HUST_C
         struct School *data = reinterpret_cast<struct School *>(item->data());
         bool success = true;
 
-        QString value = val.toString();
+        QByteArray array = val.toString().toLocal8Bit();
+        char* value = array.data();
 
         if (role == QString("name"))
-            strcpy(data->name, reinterpret_cast<char*>(value.data()));
+            strcpy(data->name, value);
         else if (role == QString("principal"))
-            strcpy(data->principal, reinterpret_cast<char*>(value.data()));
+            strcpy(data->principal, value);
         else if (role == QString("tele"))
-            strcpy(data->tele, reinterpret_cast<char*>(value.data()));
+            strcpy(data->tele, value);
         else
             success = false;
 
@@ -225,6 +231,7 @@ namespace HUST_C
                          const QModelIndex &parent)
     {
         TreeItem *parentItem = getItem(parent);
+        
         bool success = true;
 
         struct Classes empty_class;

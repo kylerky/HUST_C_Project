@@ -51,6 +51,8 @@ namespace HUST_C {
 
 
     public slots:
+        QModelIndex getRootIndex();
+
 
         bool setSchoolData(const QModelIndex &index, const QVariant &val,
                            QString role);

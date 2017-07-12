@@ -10,6 +10,9 @@ namespace HUST_C {
     // class TreeItem
     class TreeItem
     {
+        friend class SchoolTreeItem;
+        friend class ClassTreeItem;
+
     public:
         explicit TreeItem(TreeItem *parent);
         explicit TreeItem(Iter_list &iter, TreeItem *parent = nullptr);
