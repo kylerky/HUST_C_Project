@@ -3,6 +3,7 @@ import QtQuick.Window 2.3
 import QtQuick.Layouts 1.3
 import QtQuick.Controls 1.4
 import QtQuick.Controls 2.2
+import QtQml.Models 2.3
 import "."
 import hust.kyle 1.0
 
@@ -72,18 +73,22 @@ ApplicationWindow {
                     width: parent.width
 
                     Text {
-                        text: "hello"
-                        height:parent.height
-                        width:parent.width*0.8
+                        id: treeBarLargeBtn
+                        text: qsTr("School")+qsTr("/")+qsTr("Classes")
+                        width: parent.width - treeBarAddBtn.width
+                        height: parent.height
                     }
 
                     Button {
-                        id: treeBarBtn
+                        id: treeBarAddBtn
                         cursorShape: Qt.PointingHandCursor
                         height:parent.height
                         width:parent.width*0.2
                         onClicked: {
-                            treeModel.insertSchoolRows(0, 1, treeModel.getRootIndex());
+                            console.log(leftSideView.currentIndex);
+                            if (leftSideView.currentIndex === treeModel.index(0,0) || leftSideView.currentIndex === treeModel.parent(treeModel.index(0,0)))
+                                return treeModel.insertRows(1, 1);
+                            return treeModel.insertRows(0, 1, leftSideView.currentIndex);
                         }
                     }
                 }
@@ -92,8 +97,15 @@ ApplicationWindow {
                     height: parent.height - treeBar.height
                     width: parent.width
                     color: "black"
+
                     TreeView {
+                        id: leftSideView
                         anchors.fill: parent
+                        Component.onCompleted: {
+                            treeModel.insertRows(0, 1, leftSideView.currentIndex);
+                            treeModel.setSchoolData(treeModel.index(0,0,treeModel.rowIndex), qsTr("School"), "name");
+                        }
+
                         TreeModel {
                             id: treeModel
                             onRowsInserted: {
@@ -113,30 +125,38 @@ ApplicationWindow {
                             title: "Name"
                         }
 
+                        TextMetrics {
+                            id: treeTextMetrics
+                            text: "hi"
+                            font.pointSize: 14
+                        }
+
+                        headerDelegate: Rectangle {
+                            height: 0
+                        }
+
                         rowDelegate: Rectangle {
-                            border.width: 1
-                            border.color: "black"
-                            width: parent.width
-                            height: 100
                             color: "grey"
+
+                            width: parent.width
+                            height: treeTextMetrics.height*1.2
                         }
 
                         itemDelegate: Button {
                             //anchors.fill: parent
                             cursorShape: Qt.PointingHandCursor
-
-                            Text {
-                                //anchors.fill: parent
-
-                                color: "grey"
-                                text: "hi"
+                            Rectangle {
+                                anchors.fill: parent
+                                color: styleData.selected?"blue":"grey"
+                                Text {
+                                    //anchors.fill: parent
+                                    text: "hi"+styleData.row+model.schoolName
+                                    font.pointSize: treeTextMetrics.font.pointSize
+                                }
+                                Button {
+                                    visible: false
+                                }
                             }
-                            onClicked: {
-                                console.log("begin to set data");
-                                console.log(treeModel.insertClassRows(0, 1, treeModel.index(model.index, 0, treeModel.getRootIndex())));
-                                console.log("finish")
-                            }
-
 
                         }
                     }

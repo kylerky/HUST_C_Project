@@ -14,14 +14,14 @@ namespace HUST_C {
     {
         m_iter = new struct Node();
         m_parentItem = parent;
+        m_typeIndex = 0;
     }
 
-    TreeItem::TreeItem(Iter_list &iter, TreeItem *parent)
-    : m_iter(iter), m_parentItem(parent){}
+    TreeItem::TreeItem(Iter_list &iter, TreeItem *parent, int type)
+    : m_iter(iter), m_parentItem(parent), m_typeIndex(type){}
 
     TreeItem::~TreeItem()
-    {
-    }
+    {}
 
     TreeItem *TreeItem::child(int row)
     {
@@ -64,6 +64,10 @@ namespace HUST_C {
     }
 
 
+    int TreeItem::typeIndex() const
+    {
+        return m_typeIndex;
+    }
 
 
 
@@ -72,7 +76,7 @@ namespace HUST_C {
 
 
     ClassTreeItem::ClassTreeItem(Iter_list &iter, TreeItem *parent)
-    :TreeItem(iter, parent){}
+    :TreeItem(iter, parent, 1){}
 
     ClassTreeItem::~ClassTreeItem()
     {
@@ -100,12 +104,10 @@ namespace HUST_C {
     }
 
 
-
-
-
     // SchoolTreeItem::*
 
-    SchoolTreeItem::SchoolTreeItem(Iter_list &iter, TreeItem *parent):TreeItem(iter, parent){}
+    SchoolTreeItem::SchoolTreeItem(Iter_list &iter, TreeItem *parent):TreeItem(iter, parent, 2)
+    {}
     SchoolTreeItem::~SchoolTreeItem()
     {
         qDeleteAll(m_childItems);
@@ -144,7 +146,6 @@ namespace HUST_C {
         memcpy(m_iter->data, value, sizeof(struct School));
         return true;
     }
-
 
 
     // RootTreeItem::*

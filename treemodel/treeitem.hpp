@@ -4,7 +4,6 @@ extern "C" {
     #include "list.h"
 }
 #include <QList>
-#include <QAbstractItemModel>
 
 namespace HUST_C {
     // class TreeItem
@@ -15,7 +14,7 @@ namespace HUST_C {
 
     public:
         explicit TreeItem(TreeItem *parent);
-        explicit TreeItem(Iter_list &iter, TreeItem *parent = nullptr);
+        explicit TreeItem(Iter_list &iter, TreeItem *parent = nullptr, int type = 0);
         virtual ~TreeItem();
 
         TreeItem *child(int row);
@@ -32,11 +31,14 @@ namespace HUST_C {
 
         TreeItem *parent();
 
+        int typeIndex() const;
+
     protected:
         Iter_list m_iter;
 
         QList<TreeItem*> m_childItems;
         TreeItem *m_parentItem;
+        int m_typeIndex;
     };
 
 
@@ -53,6 +55,7 @@ namespace HUST_C {
         bool insertChild(int position, void *data) override;
 
         bool setData(void *value) override;
+
     };
 
 
@@ -71,6 +74,7 @@ namespace HUST_C {
         bool insertChild(int position, void *data) override;
 
         bool setData(void *value) override;
+
     };
 
 
@@ -90,6 +94,7 @@ namespace HUST_C {
         bool insertChild(int position, void *data) override;
 
         virtual bool setData(void *listp) override;
+
     };
 
 } // namespace HUST_C

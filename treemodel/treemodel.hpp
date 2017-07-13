@@ -3,6 +3,7 @@
 
 #include <QObject>
 #include <QAbstractItemModel>
+#include <QItemSelectionModel>
 #include "treeitem.hpp"
 
 namespace HUST_C {
@@ -31,9 +32,6 @@ namespace HUST_C {
         QVariant headerData(int section, Qt::Orientation orientation,
                             int role = Qt::DisplayRole) const override;
 
-        QModelIndex index(int row, int column,
-                          const QModelIndex &parent = QModelIndex()) const override;
-        QModelIndex parent(const QModelIndex &index) const override;
 
         int rowCount(const QModelIndex &parent = QModelIndex()) const override;
         int columnCount(const QModelIndex &parent = QModelIndex()) const override;
@@ -46,30 +44,32 @@ namespace HUST_C {
                      int role = Qt::EditRole) override;
 
 
-        bool insertRows(int position, int rows,
-                        const QModelIndex &parent = QModelIndex()) override;
-
-
     public slots:
-        QModelIndex getRootIndex();
-
-
+        QModelIndex index(int row, int column,
+                          const QModelIndex &parent = QModelIndex()) const override;
+        QModelIndex parent(const QModelIndex &index) const override;
         bool setSchoolData(const QModelIndex &index, const QVariant &val,
-                           QString role);
+                           const QString &role);
 
         bool setClassData(const QModelIndex &index, const QVariant &val,
                            QString role);
 
+
+        bool removeRows(int position, int rows,
+                        const QModelIndex &parent = QModelIndex()) override;
+
+        bool insertRows(int position, int rows,
+                              const QModelIndex &parent = QModelIndex()) override;
+
+        int type(QModelIndex &index) const;
+
+    protected:
         bool insertSchoolRows(int position, int rows,
                               const QModelIndex &parent);
 
         bool insertClassRows(int position, int rows,
                              const QModelIndex &parent);
 
-        bool removeRows(int position, int rows,
-                        const QModelIndex &parent = QModelIndex()) override;
-
-    protected:
         virtual QHash<int, QByteArray> roleNames() const override;
     private:
         QHash<int, QByteArray> m_roleNames;

@@ -1,5 +1,6 @@
 #include "treemodel.hpp"
 #include "treeitem.hpp"
+#include <iostream>
 extern "C"
 {
     #include "data_def.h"
@@ -122,23 +123,23 @@ namespace HUST_C
     bool TreeModel::setData(const QModelIndex &index, const QVariant &value,
                  int role)
     {
-        return false;
+        if (index.internalPointer() == m_rootItem || index.internalPointer() == nullptr)
+            return setSchoolData(index, value, m_roleNames[role]);
+
+        return setClassData(index, value, m_roleNames[role]);
     }
 
     bool TreeModel::insertRows(int position, int rows,
                     const QModelIndex &parent)
     {
-        return false;
-    }
+        if (parent.internalPointer() == m_rootItem || parent.internalPointer() == nullptr)
+            return insertSchoolRows(position, rows, parent);
 
-
-    QModelIndex TreeModel::getRootIndex()
-    {
-        return QModelIndex();
+        return insertClassRows(position, rows, parent);
     }
 
     bool TreeModel::setSchoolData(const QModelIndex &index, const QVariant &val,
-                       QString role)
+                       const QString &role)
     {
         TreeItem *item = getItem(index);
         struct School *data = reinterpret_cast<struct School *>(item->data());
@@ -219,6 +220,7 @@ namespace HUST_C
         for (int i = 0; i != rows && success; ++i)
         {
             empty_school.classes = create_list();
+            empty_school.classes.head = new struct Node();
             success = parentItem->insertChild(position, &empty_school);
         }
 
@@ -230,6 +232,9 @@ namespace HUST_C
     bool TreeModel::insertClassRows(int position, int rows,
                          const QModelIndex &parent)
     {
+        if (reinterpret_cast<TreeItem*>(parent.internalPointer())->typeIndex() != 2)
+            return false;
+
         TreeItem *parentItem = getItem(parent);
         
         bool success = true;
@@ -279,6 +284,11 @@ namespace HUST_C
     QHash<int, QByteArray> TreeModel::roleNames() const
     {
         return m_roleNames;
+    }
+
+    int TreeModel::type(QModelIndex &index) const
+    {
+        return reinterpret_cast<TreeItem*>(index.internalPointer())->typeIndex();
     }
 
 } // namespace HUST_C
