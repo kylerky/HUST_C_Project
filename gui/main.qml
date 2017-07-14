@@ -3,6 +3,7 @@ import QtQuick.Window 2.3
 import QtQuick.Layouts 1.3
 import QtQuick.Controls 1.4
 import QtQuick.Controls 2.2
+import QtQuick.Controls.Material 2.2
 import QtQml.Models 2.3
 import "."
 import hust.kyle 1.0
@@ -13,7 +14,8 @@ ApplicationWindow {
     visible: true
     width: Screen.width*0.8
     height: Screen.height*0.75
-    color: "black"
+    Material.theme: Material.Dark
+
 
     x: (Screen.width-width)/2
     y: (Screen.height-height)/2
@@ -64,7 +66,7 @@ ApplicationWindow {
             width: parent.width-modesBar.width
             height: parent.height
             Column {
-                Layout.preferredWidth: parent.width*0.15
+                Layout.preferredWidth: parent.width*0.2
                 Layout.fillHeight: true
 
                 Row {
@@ -158,6 +160,8 @@ ApplicationWindow {
                                 }
                             }
 
+
+
                         }
                     }
 
@@ -212,6 +216,167 @@ ApplicationWindow {
             }
         }
     }
+
+
+    Popup {
+            background: Rectangle {
+                color: "#ffffff"
+                border.width: 0
+                Material.background: Material.Teal
+                Material.elevation: 6
+
+             }
+
+            id: treeSchoolPopup
+            x: parent.width*0.3
+            y: parent.height*0.2
+            width: parent.width*0.6
+            height: parent.height*0.6
+            modal: true
+            focus: true
+            padding: width*0.04
+
+
+            closePolicy: Popup.CloseOnEscape | Popup.CloseOnPressOutside
+
+            ColumnLayout {
+                id: treeSchoolPopupLayout
+                anchors.fill: parent
+                Repeater {
+                    model: ["name", "principal", "tele"]
+
+                    Rectangle {
+                        width: treeSchoolPopupLayout.width
+                        height: treeSchoolPopupLayout.height/4
+                        TextField {
+                            placeholderText: modelData
+                            background: Rectangle {
+                                border.width: 0
+                            }
+
+                            anchors.fill: parent
+                            font.pointSize: 20
+                        }
+                    }
+                }
+                Rectangle {
+                    width: treeSchoolPopupLayout.width
+                    height: treeSchoolPopupLayout.height/4
+                    id: treeSchoolPopupBtn
+                    Row {
+                        anchors.centerIn: parent
+                        width: parent.width*0.4
+                        height: parent.height*0.7
+                        Rectangle {
+                            height: parent.height
+                            width: parent.width/2
+                            Button {
+                                height: parent.height*0.8
+                                width: parent.width*0.6
+                                anchors.centerIn: parent
+                                highlighted: true
+                                Material.background: Material.Teal
+                                text: qsTr("Edit")
+                            }
+                        }
+                        Rectangle {
+                            height: parent.height
+                            width: parent.width/2
+                            Button {
+                                height: parent.height*0.8
+                                width: parent.width*0.6
+                                anchors.centerIn: parent
+                                highlighted: true
+                                Material.background: Material.Teal
+                                text: qsTr("Cancel")
+                            }
+                        }
+                    }
+                }
+            }
+
+    }
+
+
+    Popup {
+            background: Rectangle {
+                color: "#ffffff"
+                border.width: 0
+                Material.background: Material.Teal
+                Material.elevation: 6
+
+             }
+
+            id: treeClassPopup
+            x: parent.width*0.3
+            y: parent.height*0.05
+            width: parent.width*0.6
+            height: parent.height*0.9
+            modal: true
+            focus: true
+            padding: width*0.04
+
+
+            closePolicy: Popup.CloseOnEscape | Popup.CloseOnPressOutside
+
+            ColumnLayout {
+                id: treeClassPopupLayout
+                anchors.fill: parent
+                Repeater {
+                    model: ["school", "instructor", "number", "grade"]
+
+                    Rectangle {
+                        width: treeClassPopupLayout.width
+                        height: treeClassPopupLayout.height/5
+                        TextField {
+                            placeholderText: modelData
+                            background: Rectangle {
+                                border.width: 0
+                            }
+
+                            anchors.fill: parent
+                            font.pointSize: 20
+                        }
+                    }
+                }
+                Rectangle {
+                    width: treeClassPopupLayout.width
+                    height: treeClassPopupLayout.height/5
+                    id: treeClassPopupBtn
+                    Row {
+                        anchors.centerIn: parent
+                        width: parent.width*0.4
+                        height: parent.height*0.7
+                        Rectangle {
+                            height: parent.height
+                            width: parent.width/2
+                            Button {
+                                height: parent.height*0.8
+                                width: parent.width*0.6
+                                anchors.centerIn: parent
+                                highlighted: true
+                                Material.background: Material.Teal
+                                text: qsTr("Edit")
+                            }
+                        }
+                        Rectangle {
+                            height: parent.height
+                            width: parent.width/2
+                            Button {
+                                height: parent.height*0.8
+                                width: parent.width*0.6
+                                anchors.centerIn: parent
+                                highlighted: true
+                                Material.background: Material.Teal
+                                text: qsTr("Cancel")
+                            }
+                        }
+                    }
+                }
+            }
+
+    }
+
 
     footer: Row {
         id: statusBar
