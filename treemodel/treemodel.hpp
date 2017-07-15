@@ -61,7 +61,7 @@ namespace HUST_C {
         bool insertRows(int position, int rows,
                               const QModelIndex &parent = QModelIndex()) override;
 
-        int type(QModelIndex &index) const;
+        int type(const QModelIndex &index) const;
 
     protected:
         bool insertSchoolRows(int position, int rows,

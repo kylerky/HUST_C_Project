@@ -43,19 +43,19 @@ namespace HUST_C
         case SchoolNameRole:
             return QString(reinterpret_cast<char*>(reinterpret_cast<struct School*>(item->data())->name));
         case SchoolPrincipalRole:
-            return QString(reinterpret_cast<char*>(reinterpret_cast<struct School*>(item->data())->principal));
+            return QString(reinterpret_cast<struct School*>(item->data())->principal);
         case SchoolTeleRole:
-            return QString(reinterpret_cast<char*>(reinterpret_cast<struct School*>(item->data())->tele));
+            return QString(reinterpret_cast<struct School*>(item->data())->tele);
         case ClassSchoolRole:
-            return QString(reinterpret_cast<char*>(reinterpret_cast<struct Classes*>(item->data())->school));
+            return QString(reinterpret_cast<struct Classes*>(item->data())->school);
         case ClassInstructorRole:
-            return QString(reinterpret_cast<char*>(reinterpret_cast<struct Classes*>(item->data())->instructor));
+            return QString(reinterpret_cast<struct Classes*>(item->data())->instructor);
         case ClassNumberRole:
-            return QString(reinterpret_cast<char*>(reinterpret_cast<struct Classes*>(item->data())->number));;
+            return QString(reinterpret_cast<struct Classes*>(item->data())->number);;
         case ClassGradeRole:
-            return *reinterpret_cast<int*>(reinterpret_cast<struct Classes*>(item->data())->grade);
+            return reinterpret_cast<struct Classes*>(item->data())->grade;
         case ClassStudentCntRole:
-            return *reinterpret_cast<int*>(reinterpret_cast<struct Classes*>(item->data())->student_cnt);
+            return reinterpret_cast<struct Classes*>(item->data())->student_cnt;
         }
 
         return QVariant();
@@ -286,7 +286,7 @@ namespace HUST_C
         return m_roleNames;
     }
 
-    int TreeModel::type(QModelIndex &index) const
+    int TreeModel::type(const QModelIndex &index) const
     {
         return reinterpret_cast<TreeItem*>(index.internalPointer())->typeIndex();
     }

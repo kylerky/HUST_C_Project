@@ -150,13 +150,50 @@ ApplicationWindow {
                             Rectangle {
                                 anchors.fill: parent
                                 color: styleData.selected?"blue":"grey"
-                                Text {
-                                    //anchors.fill: parent
-                                    text: "hi"+styleData.row+model.schoolName
-                                    font.pointSize: treeTextMetrics.font.pointSize
-                                }
-                                Button {
-                                    visible: false
+                                Row{
+                                    anchors.fill: parent
+                                    Text {
+                                        id: treeviewInfo
+                                        width: parent.width*0.8
+                                        //anchors.fill: parent
+                                        text: "hi"+styleData.row+model.schoolName
+                                        font.pointSize: treeTextMetrics.font.pointSize
+                                    }
+                                    Button {
+                                        width: parent.width-treeviewInfo.width
+                                        height: parent.height
+                                        visible: true
+                                        Component.onCompleted: {
+                                            if (model.index === 0)
+                                                visible = false;
+                                        }
+                                        onClicked: {
+                                            switch(treeModel.type(leftSideView.currentIndex))
+                                            {
+                                            case 1:
+                                                for (var i=0; i != treeClassPopupLayoutTextField.count; ++i)
+                                                    treeClassPopupLayoutTextField.itemAt(i).text="";
+
+                                                treeClassPopupLayoutTextField.itemAt(0).text = model.classSchool;
+                                                treeClassPopupLayoutTextField.itemAt(1).text = model.classInstructor;
+                                                treeClassPopupLayoutTextField.itemAt(2).text = model.classNumber;
+                                                if (model.classGrade)
+                                                    treeClassPopupLayoutTextField.itemAt(3).text = model.classGrade;
+                                                if (model.classStudentCnt)
+                                                    treeClassPopupLayoutTextField.itemAt(4).text = model.classStudentCnt;
+                                                treeClassPopup.open();
+                                                break;
+                                            case 2:
+                                                for (var i=0; i != treeSchoolPopupLayoutTextField.count; ++i)
+                                                    treeSchoolPopupLayoutTextField.itemAt(i).text="";
+                                                treeSchoolPopupLayoutTextField.itemAt(0).text = model.schoolName;
+                                                treeSchoolPopupLayoutTextField.itemAt(1).text = model.schoolPrincipal;
+                                                treeSchoolPopupLayoutTextField.itemAt(2).text = model.schoolTele;
+                                                treeSchoolPopup.open();
+                                                break;
+                                            }
+                                        }
+                                    }
                                 }
                             }
 
@@ -243,12 +280,16 @@ ApplicationWindow {
                 id: treeSchoolPopupLayout
                 anchors.fill: parent
                 Repeater {
-                    model: ["name", "principal", "tele"]
+                    id: treeSchoolPopupLayoutTextField
+                    model: [qsTr("name"), qsTr("principal"), qsTr("telephone")]
 
                     Rectangle {
                         width: treeSchoolPopupLayout.width
                         height: treeSchoolPopupLayout.height/4
+                        property alias text: schoolInput.text
+
                         TextField {
+                            id: schoolInput
                             placeholderText: modelData
                             background: Rectangle {
                                 border.width: 0
@@ -270,6 +311,8 @@ ApplicationWindow {
                         Rectangle {
                             height: parent.height
                             width: parent.width/2
+
+
                             Button {
                                 height: parent.height*0.8
                                 width: parent.width*0.6
@@ -289,6 +332,9 @@ ApplicationWindow {
                                 highlighted: true
                                 Material.background: Material.Teal
                                 text: qsTr("Cancel")
+                                onClicked: {
+                                    treeSchoolPopup.close();
+                                }
                             }
                         }
                     }
@@ -311,7 +357,7 @@ ApplicationWindow {
             x: parent.width*0.3
             y: parent.height*0.05
             width: parent.width*0.6
-            height: parent.height*0.9
+            height: parent.height*0.95
             modal: true
             focus: true
             padding: width*0.04
@@ -323,12 +369,16 @@ ApplicationWindow {
                 id: treeClassPopupLayout
                 anchors.fill: parent
                 Repeater {
-                    model: ["school", "instructor", "number", "grade"]
+                    id: treeClassPopupLayoutTextField
+                    model: [qsTr("school"), qsTr("instructor"), qsTr("number"), qsTr("grade"), qsTr("student cnt")]
 
                     Rectangle {
                         width: treeClassPopupLayout.width
-                        height: treeClassPopupLayout.height/5
+                        height: treeClassPopupLayout.height/6
+                        property alias text: classInput.text
+
                         TextField {
+                            id: classInput
                             placeholderText: modelData
                             background: Rectangle {
                                 border.width: 0
@@ -341,7 +391,7 @@ ApplicationWindow {
                 }
                 Rectangle {
                     width: treeClassPopupLayout.width
-                    height: treeClassPopupLayout.height/5
+                    height: treeClassPopupLayout.height/6
                     id: treeClassPopupBtn
                     Row {
                         anchors.centerIn: parent
@@ -369,7 +419,14 @@ ApplicationWindow {
                                 highlighted: true
                                 Material.background: Material.Teal
                                 text: qsTr("Cancel")
+
+                                onClicked: {
+                                    treeClassPopup.close();
+                                }
+
                             }
+
+
                         }
                     }
                 }
