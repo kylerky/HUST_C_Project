@@ -146,14 +146,14 @@ namespace HUST_C
         bool success = true;
 
         QByteArray array = val.toString().toLocal8Bit();
-        char* value = array.data();
+        char* cstring = array.data();
 
         if (role == QString("name"))
-            strcpy(data->name, value);
+            strcpy(data->name, cstring);
         else if (role == QString("principal"))
-            strcpy(data->principal, value);
+            strcpy(data->principal, cstring);
         else if (role == QString("tele"))
-            strcpy(data->tele, value);
+            strcpy(data->tele, cstring);
         else
             success = false;
 
@@ -173,17 +173,26 @@ namespace HUST_C
         struct Classes *data = reinterpret_cast<struct Classes *>(item->data());
         bool success = true;
 
+        QByteArray array;
+        char* cstring;
+
         if (role == QString("school"))
         {
-            strcpy(data->school, reinterpret_cast<char*>(value.toString().data()));
+            array = value.toString().toLocal8Bit();
+            cstring = array.data();
+            strcpy(data->school, cstring);
         }
         else if (role == QString("instructor"))
         {
-            strcpy(data->instructor, reinterpret_cast<char*>(value.toString().data()));
+            array = value.toString().toLocal8Bit();
+            cstring = array.data();
+            strcpy(data->instructor, cstring);
         }
         else if (role == QString("number"))
         {
-            strcpy(data->number, reinterpret_cast<char*>(value.toString().data()));
+            array = value.toString().toLocal8Bit();
+            cstring = array.data();
+            strcpy(data->number, cstring);
         }
         else if (role == QString("grade"))
         {

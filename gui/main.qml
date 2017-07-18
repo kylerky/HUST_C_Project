@@ -96,7 +96,7 @@ ApplicationWindow {
                 }
 
                 Rectangle {
-                    height: parent.height - treeBar.height
+                    height: parent.height
                     width: parent.width
                     color: "black"
 
@@ -214,36 +214,93 @@ ApplicationWindow {
 
                 currentIndex: modesBtnWrapper.currentIndex
 
-                TableView {
+                Column {
 
-                    width: parent.width
+                    anchors.fill: parent
+                    TableView {
 
-                    model: ListModel {
-                        ListElement {
-                            name: "a"
-                            num: "1"
+                        backgroundVisible: false
+                        selectionMode: SelectionMode.ExtendedSelection
+                        width: parent.width
+                        height: parent.height-editArea.height
+                        model: ListModel {
+                            ListElement {
+                                name: "a"
+                                num: "1"
+                            }
+                            ListElement {
+                                name: "b"
+                                num: "2"
+                            }
+                            ListElement {
+                                name: "c"
+                                num: "3"
+                            }
                         }
-                        ListElement {
-                            name: "b"
-                            num: "2"
+
+                        TableViewColumn {
+                            role: "name"
+                            title: "Name"
                         }
-                        ListElement {
-                            name: "c"
-                            num: "3"
+
+                        TableViewColumn {
+                            role: "num"
+                            title: "Number"
                         }
+
                     }
 
-                    TableViewColumn {
-                        role: "name"
-                        title: "Name"
-                    }
+                    Rectangle {
+                        id: editArea
+                        color: "grey"
+                        height: parent.height*0.2
+                        width: parent.width
+                            GridView {
+                                interactive: false
+                                anchors.centerIn: parent
+                                clip: true
+                                width: (parent.width-editAreaAddBtn.width)*0.95
+                                height: parent.height
+                                cellHeight:parent.height*0.5
+                                cellWidth:parent.width*0.23
 
-                    TableViewColumn {
-                        role: "num"
-                        title: "Number"
+                                model: [qsTr("name"), qsTr("id"), qsTr("gender"), qsTr("age"), qsTr("amount")]
+                                delegate: TextField {
+                                    height:parent.height*0.5
+                                    width:parent.width*0.23
+                                    placeholderText: modelData
+                                    font.pointSize: 20
+                                    background: Rectangle {
+                                        border.width: 0
+                                    }
+                                }
+                            }
+
+                            Rectangle {
+                                anchors.right: parent.right
+                                id: editAreaAddBtn
+                                width: parent.width*0.2
+                                height: parent.height
+                                Column {
+                                    anchors.fill: parent
+                                    Button {
+                                        text: "add"
+                                        width: parent.width
+                                        height: parent.height*0.5
+                                        cursorShape: Qt.PointingHandCursor
+                                    }
+                                    Button {
+                                        text: "delete"
+                                        width: parent.width
+                                        height: parent.height*0.5
+                                        cursorShape: Qt.PointingHandCursor
+                                    }
+                                }
+                            }
                     }
 
                 }
+
 
                 Rectangle {
                     width: parent.width
