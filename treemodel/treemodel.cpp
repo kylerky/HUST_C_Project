@@ -1,304 +1,252 @@
 #include "treemodel.hpp"
-#include "treeitem.hpp"
 #include <iostream>
-extern "C"
-{
-    #include "data_def.h"
-    #include "list.h"
+#include "treeitem.hpp"
+extern "C" {
+#include "data_def.h"
+#include "list.h"
 }
-#include <string.h>
+#include <cstring>
 
-namespace HUST_C
-{
+namespace HUST_C {
 
-    TreeModel::TreeModel(QObject *parent)
-        : QAbstractItemModel(parent)
-    {
-        m_roleNames[SchoolNameRole] = "schoolName";
-        m_roleNames[SchoolPrincipalRole] = "schoolPrincipal";
-        m_roleNames[SchoolTeleRole] = "schoolTele";
-        m_roleNames[ClassSchoolRole] = "classSchool";
-        m_roleNames[ClassInstructorRole] = "classInstructor";
-        m_roleNames[ClassNumberRole] = "classNumber";
-        m_roleNames[ClassGradeRole] = "classGrade";
-        m_roleNames[ClassStudentCntRole] = "classStudentCnt";
+TreeModel::TreeModel(QObject *parent) : QAbstractItemModel(parent) {
+    m_roleNames[SchoolNameRole] = "schoolName";
+    m_roleNames[SchoolPrincipalRole] = "schoolPrincipal";
+    m_roleNames[SchoolTeleRole] = "schoolTele";
+    m_roleNames[ClassSchoolRole] = "classSchool";
+    m_roleNames[ClassInstructorRole] = "classInstructor";
+    m_roleNames[ClassNumberRole] = "classNumber";
+    m_roleNames[ClassGradeRole] = "classGrade";
+    m_roleNames[ClassStudentCntRole] = "classStudentCnt";
 
-        m_rootItem = new RootTreeItem();
-    }
+    m_rootItem = new RootTreeItem();
+}
 
-    TreeModel::~TreeModel()
-    {
-        delete m_rootItem;
-    }
+TreeModel::~TreeModel() { delete m_rootItem; }
 
-    QVariant TreeModel::data(const QModelIndex &index, int role) const
-    {
-        if (!index.isValid())
-            return QVariant();
+QVariant TreeModel::data(const QModelIndex &index, int role) const {
+    if (!index.isValid()) return QVariant();
 
-        TreeItem *item = getItem(index);
+    TreeItem *item = getItem(index);
 
-        switch(role)
-        {
+    switch (role) {
         case SchoolNameRole:
-            return QString(reinterpret_cast<char*>(reinterpret_cast<struct School*>(item->data())->name));
+            return QString(reinterpret_cast<char *>(
+                reinterpret_cast<struct School *>(item->data())->name));
         case SchoolPrincipalRole:
-            return QString(reinterpret_cast<struct School*>(item->data())->principal);
+            return QString(
+                reinterpret_cast<struct School *>(item->data())->principal);
         case SchoolTeleRole:
-            return QString(reinterpret_cast<struct School*>(item->data())->tele);
+            return QString(
+                reinterpret_cast<struct School *>(item->data())->tele);
         case ClassSchoolRole:
-            return QString(reinterpret_cast<struct Classes*>(item->data())->school);
+            return QString(
+                reinterpret_cast<struct Classes *>(item->data())->school);
         case ClassInstructorRole:
-            return QString(reinterpret_cast<struct Classes*>(item->data())->instructor);
+            return QString(
+                reinterpret_cast<struct Classes *>(item->data())->instructor);
         case ClassNumberRole:
-            return QString(reinterpret_cast<struct Classes*>(item->data())->number);;
+            return QString(
+                reinterpret_cast<struct Classes *>(item->data())->number);
         case ClassGradeRole:
-            return reinterpret_cast<struct Classes*>(item->data())->grade;
+            return reinterpret_cast<struct Classes *>(item->data())->grade;
         case ClassStudentCntRole:
-            return reinterpret_cast<struct Classes*>(item->data())->student_cnt;
-        }
-
-        return QVariant();
+            return reinterpret_cast<struct Classes *>(item->data())
+                ->student_cnt;
     }
 
-    QVariant TreeModel::headerData(int section, Qt::Orientation oreientation,
-                                   int role) const
-    {
-        return QVariant();
+    return QVariant();
+}
+
+QVariant TreeModel::headerData(int section, Qt::Orientation oreientation,
+                               int role) const {
+    return QVariant();
+}
+
+QModelIndex TreeModel::index(int row, int column,
+                             const QModelIndex &parent) const {
+    if (parent.isValid() && parent.column() != 0) return QModelIndex();
+
+    TreeItem *parentItem = getItem(parent);
+
+    TreeItem *childItem = parentItem->child(row);
+
+    if (childItem)
+        return createIndex(row, column, childItem);
+    else
+        return QModelIndex();
+}
+
+QModelIndex TreeModel::parent(const QModelIndex &index) const {
+    if (!index.isValid()) return QModelIndex();
+
+    TreeItem *childItem = getItem(index);
+    TreeItem *parentItem = childItem->parent();
+
+    if (parentItem == m_rootItem) return QModelIndex();
+
+    return createIndex(parentItem->childNumber(), 0, parentItem);
+}
+
+int TreeModel::rowCount(const QModelIndex &parent) const {
+    TreeItem *parentItem = getItem(parent);
+
+    return parentItem->childCount();
+}
+
+int TreeModel::columnCount(const QModelIndex &parent) const {
+    return m_rootItem->columnCount();
+}
+
+Qt::ItemFlags TreeModel::flags(const QModelIndex &index) const {
+    if (!index.isValid()) return 0;
+
+    return Qt::ItemIsEditable | QAbstractItemModel::flags(index);
+}
+
+bool TreeModel::setData(const QModelIndex &index, const QVariant &value,
+                        int role) {
+    if (index.internalPointer() == m_rootItem ||
+        index.internalPointer() == nullptr)
+        return setSchoolData(index, value, m_roleNames[role]);
+
+    return setClassData(index, value, m_roleNames[role]);
+}
+
+bool TreeModel::insertRows(int position, int rows, const QModelIndex &parent) {
+    if (parent.internalPointer() == m_rootItem ||
+        parent.internalPointer() == nullptr)
+        return insertSchoolRows(position, rows, parent);
+
+    return insertClassRows(position, rows, parent);
+}
+
+bool TreeModel::setSchoolData(const QModelIndex &index, const QVariant &val,
+                              const QString &role) {
+    TreeItem *item = getItem(index);
+    struct School *data = reinterpret_cast<struct School *>(item->data());
+    bool success = true;
+
+    QByteArray array = val.toString().toLocal8Bit();
+    char *cstring = array.data();
+
+    if (role == QString("name"))
+        std::strcpy(data->name, cstring);
+    else if (role == QString("principal"))
+        std::strcpy(data->principal, cstring);
+    else if (role == QString("tele"))
+        std::strcpy(data->tele, cstring);
+    else
+        success = false;
+
+    if (success) {
+        emit dataChanged(index, index);
     }
 
+    return success;
+}
 
-    QModelIndex TreeModel::index(int row, int column, const QModelIndex &parent) const
-    {
-        if (parent.isValid() && parent.column() != 0)
-            return QModelIndex();
+bool TreeModel::setClassData(const QModelIndex &index, const QVariant &value,
+                             QString role) {
+    TreeItem *item = getItem(index);
+    struct Classes *data = reinterpret_cast<struct Classes *>(item->data());
+    bool success = true;
 
-        TreeItem *parentItem = getItem(parent);
+    QByteArray array;
+    char *cstring;
 
-        TreeItem *childItem = parentItem->child(row);
+    if (role == QString("school")) {
+        array = value.toString().toLocal8Bit();
+        cstring = array.data();
+        std::strcpy(data->school, cstring);
+    } else if (role == QString("instructor")) {
+        array = value.toString().toLocal8Bit();
+        cstring = array.data();
+        std::strcpy(data->instructor, cstring);
+    } else if (role == QString("number")) {
+        array = value.toString().toLocal8Bit();
+        cstring = array.data();
+        std::strcpy(data->number, cstring);
+    } else if (role == QString("grade")) {
+        data->grade = value.toInt();
+    } else if (role == QString("studentCnt")) {
+        data->student_cnt = value.toInt();
+    } else
+        success = false;
 
-        if (childItem)
-            return createIndex(row, column, childItem);
-        else
-            return QModelIndex();
+    if (success) {
+        emit dataChanged(index, index);
     }
 
-    QModelIndex TreeModel::parent(const QModelIndex &index) const
-    {
-        if (!index.isValid())
-            return QModelIndex();
+    return success;
+}
 
-        TreeItem *childItem = getItem(index);
-        TreeItem *parentItem = childItem->parent();
+bool TreeModel::insertSchoolRows(int position, int rows,
+                                 const QModelIndex &parent) {
+    TreeItem *parentItem = getItem(parent);
+    bool success = true;
 
-        if (parentItem == m_rootItem)
-            return QModelIndex();
+    struct School empty_school;
+    std::memset(&empty_school, 0, sizeof(empty_school));
 
-        return createIndex(parentItem->childNumber(), 0, parentItem);
+    emit beginInsertRows(parent, position, position + rows - 1);
+
+    for (int i = 0; i != rows && success; ++i) {
+        empty_school.classes = create_list();
+        empty_school.classes.head = new struct Node();
+        success = parentItem->insertChild(position, &empty_school);
     }
 
+    emit endInsertRows();
+    return success;
+}
 
+bool TreeModel::insertClassRows(int position, int rows,
+                                const QModelIndex &parent) {
+    if (reinterpret_cast<TreeItem *>(parent.internalPointer())->typeIndex() !=
+        2)
+        return false;
 
-    int TreeModel::rowCount(const QModelIndex &parent) const
-    {
-        TreeItem *parentItem = getItem(parent);
+    TreeItem *parentItem = getItem(parent);
 
-        return parentItem->childCount();
+    bool success = true;
+
+    struct Classes empty_class;
+    std::memset(&empty_class, 0, sizeof(empty_class));
+
+    emit beginInsertRows(parent, position, position + rows - 1);
+
+    for (int i = 0; i != rows && success; ++i) {
+        empty_class.donors = create_list();
+        success = parentItem->insertChild(position, &empty_class);
     }
+    emit endInsertRows();
+    return success;
+}
 
+bool TreeModel::removeRows(int position, int rows, const QModelIndex &parent) {
+    TreeItem *parentItem = getItem(parent);
+    bool success = true;
 
-    int TreeModel::columnCount(const QModelIndex &parent) const
-    {
-        return m_rootItem->columnCount();
+    emit beginRemoveRows(parent, position, position + rows - 1);
+    success = parentItem->removeChildren(position, rows);
+    emit endRemoveRows();
+
+    return success;
+}
+
+TreeItem *TreeModel::getItem(const QModelIndex &index) const {
+    if (index.isValid()) {
+        TreeItem *item = static_cast<TreeItem *>(index.internalPointer());
+        if (item) return item;
     }
+    return m_rootItem;
+}
 
-    Qt::ItemFlags TreeModel::flags(const QModelIndex &index) const
-    {
-        if (!index.isValid())
-            return 0;
+QHash<int, QByteArray> TreeModel::roleNames() const { return m_roleNames; }
 
-        return Qt::ItemIsEditable | QAbstractItemModel::flags(index);
-    }
+int TreeModel::type(const QModelIndex &index) const {
+    return reinterpret_cast<TreeItem *>(index.internalPointer())->typeIndex();
+}
 
-    bool TreeModel::setData(const QModelIndex &index, const QVariant &value,
-                 int role)
-    {
-        if (index.internalPointer() == m_rootItem || index.internalPointer() == nullptr)
-            return setSchoolData(index, value, m_roleNames[role]);
-
-        return setClassData(index, value, m_roleNames[role]);
-    }
-
-    bool TreeModel::insertRows(int position, int rows,
-                    const QModelIndex &parent)
-    {
-        if (parent.internalPointer() == m_rootItem || parent.internalPointer() == nullptr)
-            return insertSchoolRows(position, rows, parent);
-
-        return insertClassRows(position, rows, parent);
-    }
-
-    bool TreeModel::setSchoolData(const QModelIndex &index, const QVariant &val,
-                       const QString &role)
-    {
-        TreeItem *item = getItem(index);
-        struct School *data = reinterpret_cast<struct School *>(item->data());
-        bool success = true;
-
-        QByteArray array = val.toString().toLocal8Bit();
-        char* cstring = array.data();
-
-        if (role == QString("name"))
-            strcpy(data->name, cstring);
-        else if (role == QString("principal"))
-            strcpy(data->principal, cstring);
-        else if (role == QString("tele"))
-            strcpy(data->tele, cstring);
-        else
-            success = false;
-
-        if (success)
-        {
-             emit dataChanged(index, index);
-        }
-
-        return success;
-    }
-
-
-    bool TreeModel::setClassData(const QModelIndex &index, const QVariant &value,
-                       QString role)
-    {
-        TreeItem *item = getItem(index);
-        struct Classes *data = reinterpret_cast<struct Classes *>(item->data());
-        bool success = true;
-
-        QByteArray array;
-        char* cstring;
-
-        if (role == QString("school"))
-        {
-            array = value.toString().toLocal8Bit();
-            cstring = array.data();
-            strcpy(data->school, cstring);
-        }
-        else if (role == QString("instructor"))
-        {
-            array = value.toString().toLocal8Bit();
-            cstring = array.data();
-            strcpy(data->instructor, cstring);
-        }
-        else if (role == QString("number"))
-        {
-            array = value.toString().toLocal8Bit();
-            cstring = array.data();
-            strcpy(data->number, cstring);
-        }
-        else if (role == QString("grade"))
-        {
-            data->grade = value.toInt();
-        }
-        else if (role == QString("studentCnt"))
-        {
-            data->student_cnt = value.toInt();
-        }
-        else
-            success = false;
-
-        if (success)
-        {
-             emit dataChanged(index, index);
-        }
-
-        return success;
-    }
-
-    bool TreeModel::insertSchoolRows(int position, int rows,
-                          const QModelIndex &parent)
-    {
-        TreeItem *parentItem = getItem(parent);
-        bool success = true;
-
-        struct School empty_school;
-        empty_school.name[0] = 0;
-        empty_school.principal[0] = 0;
-        empty_school.tele[0] = 0;
-
-        emit beginInsertRows(parent, position, position+rows-1);
-
-        for (int i = 0; i != rows && success; ++i)
-        {
-            empty_school.classes = create_list();
-            empty_school.classes.head = new struct Node();
-            success = parentItem->insertChild(position, &empty_school);
-        }
-
-        emit endInsertRows();
-        return success;
-
-    }
-
-    bool TreeModel::insertClassRows(int position, int rows,
-                         const QModelIndex &parent)
-    {
-        if (reinterpret_cast<TreeItem*>(parent.internalPointer())->typeIndex() != 2)
-            return false;
-
-        TreeItem *parentItem = getItem(parent);
-        
-        bool success = true;
-
-        struct Classes empty_class;
-        empty_class.grade = 0;
-        empty_class.instructor[0] = 0;
-        empty_class.number[0] = 0;
-        empty_class.school[0] = 0;
-        empty_class.student_cnt = 0;
-
-        emit beginInsertRows(parent, position, position+rows-1);
-
-        for (int i = 0; i != rows && success; ++i)
-        {
-            empty_class.donors = create_list();
-            success = parentItem->insertChild(position, &empty_class);
-        }
-        emit endInsertRows();
-        return success;
-    }
-
-    bool TreeModel::removeRows(int position, int rows, const QModelIndex &parent)
-    {
-        TreeItem *parentItem = getItem(parent);
-        bool success = true;
-
-        emit beginRemoveRows(parent, position, position+rows-1);
-        success = parentItem->removeChildren(position, rows);
-        emit endRemoveRows();
-
-        return success;
-    }
-
-
-    TreeItem *TreeModel::getItem(const QModelIndex &index) const
-    {
-        if (index.isValid())
-        {
-            TreeItem *item = static_cast<TreeItem*>(index.internalPointer());
-            if (item)
-                return item;
-        }
-        return m_rootItem;
-    }
-
-    QHash<int, QByteArray> TreeModel::roleNames() const
-    {
-        return m_roleNames;
-    }
-
-    int TreeModel::type(const QModelIndex &index) const
-    {
-        return reinterpret_cast<TreeItem*>(index.internalPointer())->typeIndex();
-    }
-
-} // namespace HUST_C
-
+}  // namespace HUST_C
