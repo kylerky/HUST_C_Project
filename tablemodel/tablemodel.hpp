@@ -4,9 +4,10 @@
 #include <QAbstractItemModel>
 #include <QObject>
 extern "C" {
-    #include "list.h"
+#include "list.h"
 }
 
+Q_DECLARE_METATYPE(List *)
 namespace HUST_C {
 class TableModel : public QAbstractItemModel {
     Q_OBJECT
@@ -21,12 +22,12 @@ class TableModel : public QAbstractItemModel {
         AmountRole = Qt::UserRole + 4
     };
 
-    explicit TableModel();
-    explicit TableModel(List &list);
+    explicit TableModel(QObject *parent = nullptr);
     ~TableModel();
 
     // read
     QVariant data(const QModelIndex &index, int role) const override;
+    List *getDonors(const QModelIndex &index) const;
 
     int columnCount(const QModelIndex &parent = QModelIndex()) const override;
     int rowCount(const QModelIndex &parent = QModelIndex()) const override;
@@ -36,13 +37,15 @@ class TableModel : public QAbstractItemModel {
     Qt::ItemFlags flags(const QModelIndex &index) const override;
 
    public slots:
+    void setList(QVariant plist);
     bool insert(int position);
     bool touchData(int position, const QVariant &value, const QString &role);
     bool append();
     bool remove(int index);
     void clear();
 
-    QModelIndex index(int row, int column, const QModelIndex &parent) const override;
+    QModelIndex index(int row, int column,
+                      const QModelIndex &parent) const override;
     QModelIndex parent(const QModelIndex &child) const override;
    signals:
     void countChanged(int cnt);
@@ -54,7 +57,7 @@ class TableModel : public QAbstractItemModel {
     QHash<int, QByteArray> m_roleNames;
     QHash<QString, int> m_roleIndex;
     int m_count;
-    List m_list;
+    List *m_list;
 };
 }  // namespace HUST_C
 

@@ -118,6 +118,12 @@ ApplicationWindow {
                             }
                         }
 
+
+                        onCurrentIndexChanged: {
+                            console.log("index changed");
+                            tableModel.setList(treeModel.getDonors(leftSideView.currentIndex));
+                        }
+
                         Layout.fillHeight: true
                         Layout.preferredWidth: Screen.width * 0.1
 
@@ -223,19 +229,8 @@ ApplicationWindow {
                         selectionMode: SelectionMode.ExtendedSelection
                         width: parent.width
                         height: parent.height-editArea.height
-                        model: ListModel {
-                            ListElement {
-                                name: "a"
-                                num: "1"
-                            }
-                            ListElement {
-                                name: "b"
-                                num: "2"
-                            }
-                            ListElement {
-                                name: "c"
-                                num: "3"
-                            }
+                        model: TableModel {
+                            id: tableModel
                         }
 
                         TableViewColumn {
@@ -244,8 +239,8 @@ ApplicationWindow {
                         }
 
                         TableViewColumn {
-                            role: "num"
-                            title: "Number"
+                            role: "id"
+                            title: "ID "
                         }
 
                     }
@@ -288,6 +283,12 @@ ApplicationWindow {
                                         width: parent.width
                                         height: parent.height*0.5
                                         cursorShape: Qt.PointingHandCursor
+                                        onClicked: {
+                                            console.log("list", "add");
+                                            console.log(tableModel.insert(0));
+                                            console.log(tableModel.touchData(0, "Patric", "name"));
+                                            tableModel.touchData(0, "U201600000", "id");
+                                        }
                                     }
                                     Button {
                                         text: "delete"

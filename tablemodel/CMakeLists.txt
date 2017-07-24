@@ -5,7 +5,7 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
 set(CMAKE_AUTOMOC ON)
 
-include_directories(../clist)
+include_directories(../clist ../treemodel)
 
 find_package(Qt5Core)
 

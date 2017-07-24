@@ -18,7 +18,8 @@ class TreeModel : public QAbstractItemModel {
         ClassInstructorRole = Qt::UserRole + 4,
         ClassNumberRole = Qt::UserRole + 5,
         ClassGradeRole = Qt::UserRole + 6,
-        ClassStudentCntRole = Qt::UserRole + 7
+        ClassStudentCntRole = Qt::UserRole + 7,
+        ClassListPointerRole = Qt::UserRole + 8
     };
 
     TreeModel(QObject *parent = nullptr);
@@ -26,6 +27,7 @@ class TreeModel : public QAbstractItemModel {
 
     // read
     QVariant data(const QModelIndex &index, int role) const override;
+
     QVariant headerData(int section, Qt::Orientation orientation,
                         int role = Qt::DisplayRole) const override;
 
@@ -39,6 +41,8 @@ class TreeModel : public QAbstractItemModel {
                  int role = Qt::EditRole) override;
 
    public slots:
+    QVariant getDonors(const QModelIndex &index) const;
+
     QModelIndex index(int row, int column,
                       const QModelIndex &parent = QModelIndex()) const override;
     QModelIndex parent(const QModelIndex &index) const override;
@@ -53,6 +57,8 @@ class TreeModel : public QAbstractItemModel {
 
     bool insertRows(int position, int rows,
                     const QModelIndex &parent = QModelIndex()) override;
+
+    //    List *getList(const QModelIndex &index) const;
 
     int type(const QModelIndex &index) const;
 

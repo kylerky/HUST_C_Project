@@ -4,6 +4,7 @@ extern "C" {
 #include "list.h"
 }
 #include "tablemodel.hpp"
+#include "treemodel.hpp"
 
 namespace HUST_C {
 
@@ -13,7 +14,8 @@ static inline Iter_list seek(List list, size_t index) {
     return iter;
 }
 
-TableModel::TableModel() : QAbstractItemModel() {
+TableModel::TableModel(QObject *parent)
+    : QAbstractItemModel(parent), m_list(nullptr) {
     m_roleNames[NameRole] = "name";
     m_roleNames[IdRole] = "id";
     m_roleNames[GenderRole] = "gender";
@@ -25,33 +27,15 @@ TableModel::TableModel() : QAbstractItemModel() {
     m_roleIndex["gender"] = GenderRole;
     m_roleIndex["age"] = AgeRole;
     m_roleIndex["amount"] = AmountRole;
-
-    m_list = create_list();
-}
-
-TableModel::TableModel(List &list) : QAbstractItemModel() {
-    m_roleNames[NameRole] = "name";
-    m_roleNames[IdRole] = "id";
-    m_roleNames[GenderRole] = "gender";
-    m_roleNames[AgeRole] = "age";
-    m_roleNames[AmountRole] = "amount";
-
-    m_roleIndex["name"] = NameRole;
-    m_roleIndex["id"] = IdRole;
-    m_roleIndex["gender"] = GenderRole;
-    m_roleIndex["age"] = AgeRole;
-    m_roleIndex["amount"] = AmountRole;
-
-    m_list = list;
 }
 
 TableModel::~TableModel() {}
 
 QVariant TableModel::data(const QModelIndex &index, int role) const {
     int row = index.row();
-    if (row < 0 || row >= m_list.size) return QVariant();
+    if (!m_list || row < 0 || row >= m_list->size) return QVariant();
 
-    Iter_list iter = seek(m_list, row);
+    Iter_list iter = seek(*m_list, row);
     struct Donor *data = reinterpret_cast<struct Donor *>(iter->data);
 
     switch (role) {
@@ -77,7 +61,9 @@ int TableModel::columnCount(const QModelIndex &parent) const {
 
 int TableModel::rowCount(const QModelIndex &parent) const {
     Q_UNUSED(parent);
-    return m_list.size;
+    if (m_list) return m_list->size;
+
+    return 0;
 }
 
 int TableModel::count() const { return rowCount(); }
@@ -88,22 +74,35 @@ Qt::ItemFlags TableModel::flags(const QModelIndex &index) const {
     return Qt::ItemIsEditable | QAbstractItemModel::flags(index);
 }
 
-bool TableModel::insert(int position) {
-    if (position < 0 || position > m_list.size) return false;
+void TableModel::setList(QVariant val) {
+    List *plist = val.value<List *>();
 
-    Iter_list iter = seek(m_list, position);
+    if (!plist) return;
+    emit beginResetModel();
+    emit endResetModel();
+    emit beginInsertRows(QModelIndex(), 0, plist->size - 1);
+    m_list = plist;
+    emit endInsertRows();
+}
+
+bool TableModel::insert(int position) {
+    if (!m_list || position < 0 || position > m_list->size) return false;
+
+    Iter_list iter = seek(*m_list, position);
 
     struct Donor donor;
     std::memset(&donor, 0, sizeof(donor));
     emit beginInsertRows(QModelIndex(), position, position);
-    insert_before_list(m_list, iter, &donor);
+    insert_before_list(*m_list, iter, &donor);
     emit endInsertRows();
     return true;
 }
 
 bool TableModel::touchData(int position, const QVariant &value,
                            const QString &role) {
-    Iter_list iter = seek(m_list, position);
+    if (!m_list) return false;
+
+    Iter_list iter = seek(*m_list, position);
 
     struct Donor *data = reinterpret_cast<struct Donor *>(iter->data);
 
@@ -134,24 +133,27 @@ bool TableModel::touchData(int position, const QVariant &value,
     return success;
 }
 
-bool TableModel::append() { return insert(m_list.size); }
+bool TableModel::append() { return insert(m_list->size); }
 
 bool TableModel::remove(int index) {
-    if (index < 0 || index >= m_list.size) return false;
-    Iter_list iter = seek(m_list, index);
+    if (!m_list || index < 0 || index >= m_list->size) return false;
+    Iter_list iter = seek(*m_list, index);
     emit beginRemoveRows(QModelIndex(), index, index);
-    erase_list(m_list, iter);
+    erase_list(*m_list, iter);
     emit endRemoveRows();
     return true;
 }
 
 void TableModel::clear() {
+    if (!m_list) return;
+
     emit beginResetModel();
-    erase_seq_list(m_list, first_list(m_list), nullptr);
+    erase_seq_list(*m_list, first_list(*m_list), nullptr);
     emit endResetModel();
 }
 
-QModelIndex TableModel::index(int row, int column, const QModelIndex &parent) const {
+QModelIndex TableModel::index(int row, int column,
+                              const QModelIndex &parent) const {
     Q_UNUSED(parent);
     return createIndex(row, column);
 }
@@ -161,8 +163,6 @@ QModelIndex TableModel::parent(const QModelIndex &child) const {
     return QModelIndex();
 }
 
-QHash<int, QByteArray> TableModel::roleNames() const {
-    return m_roleNames;
-}
+QHash<int, QByteArray> TableModel::roleNames() const { return m_roleNames; }
 
 }  // namespace HUST_C

@@ -7,6 +7,8 @@ extern "C" {
 }
 #include <cstring>
 
+Q_DECLARE_METATYPE(List *)
+
 namespace HUST_C {
 
 TreeModel::TreeModel(QObject *parent) : QAbstractItemModel(parent) {
@@ -56,6 +58,19 @@ QVariant TreeModel::data(const QModelIndex &index, int role) const {
     }
 
     return QVariant();
+}
+
+QVariant TreeModel::getDonors(const QModelIndex &index) const {
+    if (!index.isValid()) return QVariant();
+
+    TreeItem *item = getItem(index);
+
+    if (item->typeIndex() != 1) return QVariant();
+
+    QVariant val;
+    val.setValue(&reinterpret_cast<struct Classes *>(item->data())->donors);
+
+    return val;
 }
 
 QVariant TreeModel::headerData(int section, Qt::Orientation oreientation,
@@ -244,6 +259,16 @@ TreeItem *TreeModel::getItem(const QModelIndex &index) const {
 }
 
 QHash<int, QByteArray> TreeModel::roleNames() const { return m_roleNames; }
+/*
+List *TreeModel::getList(const QModelIndex &index) const {
+    if (!index.isValid() || type(index) != 1) return nullptr;
+
+    TreeItem *item = getItem(index);
+
+    List *list = &reinterpret_cast<struct Classes *>(item->data())->donors;
+
+    return &reinterpret_cast<struct Classes *>(item->data())->donors;
+}*/
 
 int TreeModel::type(const QModelIndex &index) const {
     return reinterpret_cast<TreeItem *>(index.internalPointer())->typeIndex();

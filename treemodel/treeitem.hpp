@@ -1,102 +1,88 @@
 #ifndef TREEDATA_HPP
 #define TREEDATA_HPP
 extern "C" {
-    #include "list.h"
+#include "list.h"
 }
 #include <QList>
 
 namespace HUST_C {
-    // class TreeItem
-    class TreeItem
-    {
-        friend class SchoolTreeItem;
-        friend class ClassTreeItem;
+// class TreeItem
+class TreeItem {
+    friend class SchoolTreeItem;
+    friend class ClassTreeItem;
 
-    public:
-        explicit TreeItem(TreeItem *parent);
-        explicit TreeItem(Iter_list &iter, TreeItem *parent = nullptr, int type = 0);
-        virtual ~TreeItem();
+   public:
+    explicit TreeItem(TreeItem *parent);
+    explicit TreeItem(Iter_list &iter, TreeItem *parent = nullptr,
+                      int type = 0);
+    virtual ~TreeItem();
 
-        TreeItem *child(int row);
-        int childCount() const;
-        int columnCount() const;
-        virtual void *data() const = 0;
+    TreeItem *child(int row);
+    int childCount() const;
+    int columnCount() const;
+    virtual void *data() const = 0;
 
-        virtual bool insertChild(int position, void *data) = 0;
+    virtual bool insertChild(int position, void *data) = 0;
 
-        int childNumber() const;
-        virtual bool setData(void *value) = 0;
+    int childNumber() const;
+    virtual bool setData(void *value) = 0;
 
-        bool removeChildren(int position, int count);
+    bool removeChildren(int position, int count);
 
-        TreeItem *parent();
+    TreeItem *parent();
 
-        int typeIndex() const;
+    int typeIndex() const;
 
-    protected:
-        Iter_list m_iter;
+   protected:
+    Iter_list m_iter;
 
-        QList<TreeItem*> m_childItems;
-        TreeItem *m_parentItem;
-        int m_typeIndex;
-    };
+    QList<TreeItem *> m_childItems;
+    TreeItem *m_parentItem;
+    int m_typeIndex;
+};
 
+// class ClassTreeItem
 
-    // class ClassTreeItem
+class ClassTreeItem : public TreeItem {
+   public:
+    explicit ClassTreeItem(Iter_list &iter, TreeItem *parent = nullptr);
+    ~ClassTreeItem() override;
 
-    class ClassTreeItem : public TreeItem
-    {
-    public:
-        explicit ClassTreeItem(Iter_list &iter, TreeItem *parent = nullptr);
-        ~ClassTreeItem() override;
+    void *data() const override;
 
-        void *data() const override;
+    bool insertChild(int position, void *data) override;
 
-        bool insertChild(int position, void *data) override;
+    bool setData(void *value) override;
+};
 
-        bool setData(void *value) override;
+// class SchoolTreeItem
 
-    };
+class SchoolTreeItem : public TreeItem {
+   public:
+    explicit SchoolTreeItem(Iter_list &iter, TreeItem *parent = nullptr);
+    ~SchoolTreeItem() override;
 
+    void *data() const override;
 
+    bool insertChild(int position, void *data) override;
 
-    // class SchoolTreeItem
+    bool setData(void *value) override;
+};
 
+// class RootTreeItem
 
-    class SchoolTreeItem : public TreeItem
-    {
-    public:
-        explicit SchoolTreeItem(Iter_list &iter, TreeItem *parent = nullptr);
-        ~SchoolTreeItem() override;
+class RootTreeItem : public TreeItem {
+   public:
+    explicit RootTreeItem(TreeItem *parent = nullptr);
+    ~RootTreeItem() override;
 
-        void *data() const override;
+    void *data() const override;
 
-        bool insertChild(int position, void *data) override;
+    bool insertChild(int position, void *data) override;
 
-        bool setData(void *value) override;
+    virtual bool setData(void *listp) override;
+};
 
-    };
+}  // namespace HUST_C
 
-
-
-
-
-    // class RootTreeItem
-
-    class RootTreeItem : public TreeItem
-    {
-    public:
-        explicit RootTreeItem(TreeItem *parent = nullptr);
-        ~RootTreeItem() override;
-
-        void *data() const override;
-
-        bool insertChild(int position, void *data) override;
-
-        virtual bool setData(void *listp) override;
-
-    };
-
-} // namespace HUST_C
-
-#endif // TREEDATA_HPP
+#endif  // TREEDATA_HPP

@@ -17,8 +17,7 @@
  *      tele       the telephone number of the schoo
  *      classes    the classes of the school
 */
-struct School
-{
+struct School {
     char name[30];
     char principal[20];
     char tele[20];
@@ -37,8 +36,7 @@ struct School
  *      student_cnt     number of students in the class
  *      donors          the donors of the class
 */
-struct Classes
-{
+struct Classes {
     char school[30];
     char instructor[30];
     char number[10];
@@ -57,10 +55,9 @@ struct Classes
  *      sex         the sex of the donor (0 for male, 1 for female, 2 for X)
  *      age         the age of the donor
  *      amount      the amount of money the donor donated
- *              
+ *
 */
-struct Donor
-{
+struct Donor {
     char name[20];
     char id[11];
     char sex;
@@ -68,4 +65,4 @@ struct Donor
     float amount;
 };
 
-#endif // DATA_DEF_H
+#endif  // DATA_DEF_H

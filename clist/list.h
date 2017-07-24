@@ -1,6 +1,6 @@
- /*
- * list.h
- * this file is the declaration of list related functions and structs
+/*
+* list.h
+* this file is the declaration of list related functions and structs
 */
 
 #ifndef LIST_H
@@ -23,8 +23,7 @@ typedef struct List List;
  *      self_p  points to the pointer that point to the current node
  *      next    points to the next node
 */
-struct Node
-{
+struct Node {
     void *data;
     Iter_list *self_p;
     Iter_list next;
@@ -40,8 +39,7 @@ struct Node
  *      last    points to the last node's next pointer
  *      size    the size of the list
 */
-struct List
-{
+struct List {
     Iter_list head;
     Iter_list *last;
     size_t size;
@@ -69,7 +67,6 @@ struct List
 */
 #define first_list(list) (list).head->next
 
-
 // create
 
 /*
@@ -96,7 +93,8 @@ List create_list(void);
  * @return
  *          the iterator positioned at the inserted elment
 */
-#define append_list(list, data) append_list_generic(&(list), data, sizeof(*(data)))
+#define append_list(list, data) \
+    append_list_generic(&(list), data, sizeof(*(data)))
 
 /*
  * append_list_generic
@@ -125,7 +123,8 @@ Iter_list append_list_generic(List *list, void *data, size_t sz);
  * @return
  *          the iterator positioned at the inserted elment
 */
-#define insert_before_list(list, node, data) insert_before_list_generic(&(list), node, data, sizeof(*(data)))
+#define insert_before_list(list, node, data) \
+    insert_before_list_generic(&(list), node, data, sizeof(*(data)))
 
 /*
  * insert_before_list_generic
@@ -140,7 +139,8 @@ Iter_list append_list_generic(List *list, void *data, size_t sz);
  * @return
  *          the iterator positioned at the inserted elment
 */
-Iter_list insert_before_list_generic(List *list, Iter_list node, void *data, size_t sz);
+Iter_list insert_before_list_generic(List *list, Iter_list node, void *data,
+                                     size_t sz);
 
 /*
  * insert_seq_before_list
@@ -156,7 +156,8 @@ Iter_list insert_before_list_generic(List *list, Iter_list node, void *data, siz
  * @return
  *          the iterator positioned at the first inserted elment
 */
-#define insert_seq_before_list(list, pos, beg, end) insert_seq_before_list_generic(&(list), pos, beg, end, sizeof(*beg))
+#define insert_seq_before_list(list, pos, beg, end) \
+    insert_seq_before_list_generic(&(list), pos, beg, end, sizeof(*beg))
 
 /*
  * insert_seq_before_list_generic
@@ -172,9 +173,8 @@ Iter_list insert_before_list_generic(List *list, Iter_list node, void *data, siz
  * @return
  *          the iterator positioned at the first inserted elment
 */
-Iter_list insert_seq_before_list_generic(List *list, Iter_list pos, void *beg, void *end, size_t sz);
-
-
+Iter_list insert_seq_before_list_generic(List *list, Iter_list pos, void *beg,
+                                         void *end, size_t sz);
 
 // delete
 /*
@@ -214,7 +214,6 @@ void delete_list_p(List *list);
  *          list    the list to be operated
 */
 void pop_front_list_p(List *list);
-
 
 /*
  * erase_list
@@ -258,7 +257,6 @@ Iter_list erase_list_p(List *list, Iter_list node);
 */
 #define erase_seq_list(list, beg, end) erase_seq_list_p(&(list), beg, end)
 
-
 /*
  * erase_seq_list_p
  * to erase a sequence of nodes in a list
@@ -273,7 +271,6 @@ Iter_list erase_list_p(List *list, Iter_list node);
 */
 Iter_list erase_seq_list_p(List *list, Iter_list beg, Iter_list end);
 
-
 // operations
 /*
  * splice_list
@@ -281,18 +278,18 @@ Iter_list erase_seq_list_p(List *list, Iter_list beg, Iter_list end);
  * transfer elements from one list to another
  *
  * @param
- *          pos      the position before which to insert the elements     
+ *          pos      the position before which to insert the elements
  *          other    the list to be inserted
  *
 */
-#define splice_list(this, pos, other) splice_list_p(&this ,pos, &other)
+#define splice_list(this, pos, other) splice_list_p(&this, pos, &other)
 
 /*
  * splice_list_p
  * transfer elements from one list to another
  *
  * @param
- *          pos      the position before which to insert the elements     
+ *          pos      the position before which to insert the elements
  *          other    the list to be inserted
  *
 */
@@ -319,6 +316,6 @@ void splice_list_p(List *th, Iter_list pos, List *other);
  *          comp    the compare function
  *
 */
-void sort_list_p(List *list, int (*comp)(void*, void*));
+void sort_list_p(List *list, int (*comp)(void *, void *));
 
-#endif // LIST_H
+#endif  // LIST_H
