@@ -92,7 +92,7 @@ bool SchoolTreeItem::insertChild(int position, void *data) {
     Iter_list iter_pos = first_list(list);
     for (int i = 0; i != position; ++i) next_list(iter_pos);
 
-    struct School *data_ = reinterpret_cast<struct School *>(data);
+    struct Classes *data_ = reinterpret_cast<struct Classes *>(data);
 
     iter_pos = insert_before_list(list, iter_pos, data_);
 

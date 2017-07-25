@@ -12,7 +12,7 @@ List create_list(void) {
     list.last = &list.head->next;
 
     return list;
-};
+}
 
 Iter_list append_list_generic(List *list, void *data, size_t sz) {
     // create the new node

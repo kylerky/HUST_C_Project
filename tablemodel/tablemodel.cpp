@@ -79,10 +79,8 @@ void TableModel::setList(QVariant val) {
 
     if (!plist) return;
     emit beginResetModel();
-    emit endResetModel();
-    emit beginInsertRows(QModelIndex(), 0, plist->size - 1);
     m_list = plist;
-    emit endInsertRows();
+    emit endResetModel();
 }
 
 bool TableModel::insert(int position) {
