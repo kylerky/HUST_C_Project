@@ -90,6 +90,9 @@ ApplicationWindow {
                             console.log(leftSideView.currentIndex);
                             if (leftSideView.currentIndex === treeModel.index(0,0) || leftSideView.currentIndex === treeModel.parent(treeModel.index(0,0)))
                                 return treeModel.insertRows(1, 1);
+                            else if (treeModel.type(leftSideView.currentIndex) === TreeModel.Class)
+                                return treeModel.insertRows(leftSideView.currentIndex.row+1, 1, treeModel.parent(leftSideView.currentIndex));
+
                             return treeModel.insertRows(0, 1, leftSideView.currentIndex);
                         }
                     }
@@ -129,7 +132,7 @@ ApplicationWindow {
 
                         model: treeModel
                         TableViewColumn {
-                            role: "schoolName"
+                            role: "Name"
                             title: "Name"
                         }
 
@@ -176,7 +179,7 @@ ApplicationWindow {
                                         onClicked: {
                                             switch(treeModel.type(leftSideView.currentIndex))
                                             {
-                                            case 1:
+                                            case TreeModel.Class:
                                                 for (var i=0; i != treeClassPopupLayoutTextField.count; ++i)
                                                     treeClassPopupLayoutTextField.itemAt(i).text="";
 
@@ -189,7 +192,7 @@ ApplicationWindow {
                                                     treeClassPopupLayoutTextField.itemAt(4).text = model.classStudentCnt;
                                                 treeClassPopup.open();
                                                 break;
-                                            case 2:
+                                            case TreeModel.School:
                                                 for (var i=0; i != treeSchoolPopupLayoutTextField.count; ++i)
                                                     treeSchoolPopupLayoutTextField.itemAt(i).text="";
                                                 treeSchoolPopupLayoutTextField.itemAt(0).text = model.schoolName;

@@ -5,11 +5,12 @@
 
 List create_list(void) {
     // create the head node
-    List list = {NULL, NULL, 0};
+    List list;
 
     // initialize the head node and the list
     list.head = (Iter_list)calloc(1, sizeof(struct Node));
-    list.last = &list.head->next;
+    list.last = &(list.head->next);
+    list.size = 0;
 
     return list;
 }
@@ -36,7 +37,6 @@ Iter_list insert_before_list_generic(List *list, Iter_list pos, void *data,
                                      size_t sz) {
     // create new node
     Iter_list new_node = (Iter_list)malloc(sizeof(struct Node));
-
     // get pointer pointed to the node itself
     Iter_list *last_next = list->last;
     if (pos) {
@@ -49,6 +49,7 @@ Iter_list insert_before_list_generic(List *list, Iter_list pos, void *data,
     new_node->next = pos;
 
     *last_next = new_node;
+
     new_node->self_p = last_next;
 
     // allocate space and copy data

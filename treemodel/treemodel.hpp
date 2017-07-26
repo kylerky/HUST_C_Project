@@ -10,6 +10,14 @@ class TreeModel : public QAbstractItemModel {
     Q_OBJECT
 
    public:
+    enum ItemType {
+        Root=0,
+        Class=1,
+        School=2
+    };
+
+    Q_ENUMS(ItemType)
+
     enum RoleNames {
         SchoolNameRole = Qt::UserRole,
         SchoolPrincipalRole = Qt::UserRole + 1,

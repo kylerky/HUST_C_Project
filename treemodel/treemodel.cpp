@@ -208,7 +208,6 @@ bool TreeModel::insertSchoolRows(int position, int rows,
 
     for (int i = 0; i != rows && success; ++i) {
         empty_school.classes = create_list();
-        empty_school.classes.head = new struct Node();
         success = parentItem->insertChild(position, &empty_school);
     }
 

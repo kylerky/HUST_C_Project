@@ -87,14 +87,14 @@ void *SchoolTreeItem::data() const { return m_iter->data; }
 bool SchoolTreeItem::insertChild(int position, void *data) {
     if (position < 0 || position > m_childItems.size()) return false;
 
-    List list = reinterpret_cast<struct School *>(m_iter->data)->classes;
+    List *list = &reinterpret_cast<struct School *>(m_iter->data)->classes;
 
-    Iter_list iter_pos = first_list(list);
+    Iter_list iter_pos = first_list(*list);
     for (int i = 0; i != position; ++i) next_list(iter_pos);
 
     struct Classes *data_ = reinterpret_cast<struct Classes *>(data);
 
-    iter_pos = insert_before_list(list, iter_pos, data_);
+    iter_pos = insert_before_list(*list, iter_pos, data_);
 
     ClassTreeItem *item = new ClassTreeItem(iter_pos, this);
     m_childItems.insert(position, item);
@@ -127,14 +127,14 @@ void *RootTreeItem::data() const { return nullptr; }
 bool RootTreeItem::insertChild(int position, void *data) {
     if (position < 0 || position > m_childItems.size()) return false;
 
-    List list = reinterpret_cast<struct School *>(m_iter->data)->classes;
+    List *list = &reinterpret_cast<struct School *>(m_iter->data)->classes;
 
-    Iter_list iter_pos = first_list(list);
+    Iter_list iter_pos = first_list(*list);
     for (int i = 0; i != position; ++i) next_list(iter_pos);
 
     struct School *data_ = reinterpret_cast<struct School *>(data);
 
-    iter_pos = insert_before_list(list, iter_pos, data_);
+    iter_pos = insert_before_list(*list, iter_pos, data_);
 
     SchoolTreeItem *item = new SchoolTreeItem(iter_pos, this);
     m_childItems.insert(position, item);
