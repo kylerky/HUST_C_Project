@@ -166,6 +166,9 @@ Iter_list erase_list_p(List *list, Iter_list node) {
     // decrease size
     --list->size;
 
+    if (list->size == 0)
+        list->last = &(list->head->next);
+
     return next;
 }
 
@@ -191,6 +194,10 @@ Iter_list erase_seq_list_p(List *list, Iter_list beg, Iter_list end) {
         // next
         beg = next;
     }
+
+    if (list->size == 0)
+        list->last = &(list->head->next);
+
     return beg;
 }
 
