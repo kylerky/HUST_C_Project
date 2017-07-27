@@ -6,6 +6,8 @@ extern "C" {
 #include "tablemodel.hpp"
 #include "treemodel.hpp"
 
+#include <iostream>
+
 namespace HUST_C {
 
 static inline Iter_list seek(List list, size_t index) {
@@ -44,7 +46,7 @@ QVariant TableModel::data(const QModelIndex &index, int role) const {
         case IdRole:
             return QVariant(data->id);
         case GenderRole:
-            return QVariant(data->sex);
+            return QVariant(QChar(data->sex));
         case AgeRole:
             return QVariant(data->age);
         case AmountRole:
@@ -114,6 +116,7 @@ bool TableModel::touchData(int position, const QVariant &value,
             std::strcpy(data->id, value.toString().toLocal8Bit().data());
             break;
         case GenderRole:
+            std::cout << "gender: " << static_cast<int>(value.toChar().toLatin1()) << std::endl;
             data->sex = value.toChar().toLatin1();
             break;
         case AgeRole:

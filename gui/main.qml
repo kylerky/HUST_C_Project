@@ -227,7 +227,7 @@ ApplicationWindow {
 
                     anchors.fill: parent
                     TableView {
-
+                        id: donorsTable
                         backgroundVisible: false
                         selectionMode: SelectionMode.ExtendedSelection
                         width: parent.width
@@ -238,14 +238,31 @@ ApplicationWindow {
 
                         TableViewColumn {
                             role: "name"
-                            title: "Name"
+                            title: qsTr("Name")
                         }
-
                         TableViewColumn {
                             role: "id"
-                            title: "ID "
+                            title: qsTr("ID")
+                        }
+                        TableViewColumn {
+                            role: "gender"
+                            title: qsTr("Gender")
+                        }
+                        TableViewColumn {
+                            role: "age"
+                            title: qsTr("Age")
+                        }
+                        TableViewColumn {
+                            role: "amount"
+                            title: qsTr("Amount")
                         }
 
+                        itemDelegate: Item {
+                            Text {
+                                text: styleData.role !== "amount"? styleData.value : styleData.value.toPrecision(3)
+                                color: "black"
+                            }
+                        }
                     }
 
                     Rectangle {
@@ -254,6 +271,8 @@ ApplicationWindow {
                         height: parent.height*0.2
                         width: parent.width
                             GridView {
+                                id: donorsInputView
+
                                 interactive: false
                                 anchors.centerIn: parent
                                 clip: true
@@ -262,16 +281,26 @@ ApplicationWindow {
                                 cellHeight:parent.height*0.5
                                 cellWidth:parent.width*0.23
 
-                                model: [qsTr("name"), qsTr("id"), qsTr("gender"), qsTr("age"), qsTr("amount")]
+                                model: [
+                                    qsTr("name"),
+                                    qsTr("id"),
+                                    qsTr("gender"),
+                                    qsTr("age"),
+                                    qsTr("amount")
+                                ]
+
                                 delegate: TextField {
                                     height:parent.height*0.5
                                     width:parent.width*0.23
                                     placeholderText: modelData
                                     font.pointSize: 20
+                                    selectByMouse: true
                                     background: Rectangle {
                                         border.width: 0
                                     }
+
                                 }
+
                             }
 
                             Rectangle {
@@ -287,10 +316,40 @@ ApplicationWindow {
                                         height: parent.height*0.5
                                         cursorShape: Qt.PointingHandCursor
                                         onClicked: {
-                                            console.log("list", "add");
-                                            console.log(tableModel.insert(0));
-                                            console.log(tableModel.touchData(0, "Patric", "name"));
-                                            tableModel.touchData(0, "U201600000", "id");
+                                            var inputs = [];
+                                            for (var i = 0; i !== donorsInputView.contentItem.children.length; ++i)
+                                                if (donorsInputView.contentItem.children[i].hasOwnProperty("placeholderText"))
+                                                {
+                                                    var text = donorsInputView.contentItem.children[i].text.replace(/\s+$/g, "");
+                                                    inputs.push(text);
+                                                    donorsInputView.contentItem.children[i].text = text;
+                                                }
+
+                                            var regexps = [
+                                                        /^\w{1,19}$/,
+                                                        /^\w{1,10}$/,
+                                                        /^[fmx]$/,
+                                                        /^\d{1,3}$/,
+                                                        /^[0-9.]+$/
+                                                    ]
+
+                                            var pass = true;
+
+                                            for (var i = 0; i !== inputs.length; ++i)
+                                                if (!regexps[i].test(inputs[i]))
+                                                    pass = false;
+
+                                            if (!pass)
+                                                return;
+
+                                            tableModel.insert(tableModel.count);
+                                            tableModel.touchData(tableModel.count-1, inputs[0], "name");
+                                            tableModel.touchData(tableModel.count-1, inputs[1], "id");
+                                            tableModel.touchData(tableModel.count-1, inputs[2].charCodeAt(0), "gender");
+                                            tableModel.touchData(tableModel.count-1, inputs[3], "age");
+                                            tableModel.touchData(tableModel.count-1, Number(inputs[4]), "amount");
+
+                                            donorsTable.positionViewAtRow(tableModel.count-1, ListView.Contain);
                                         }
                                     }
                                     Button {
@@ -298,6 +357,16 @@ ApplicationWindow {
                                         width: parent.width
                                         height: parent.height*0.5
                                         cursorShape: Qt.PointingHandCursor
+
+                                        onClicked: {
+                                            var cnt = 0;
+                                            donorsTable.selection.forEach(
+                                                function(row) {
+                                                    tableModel.remove(row-cnt);
+                                                    ++cnt;
+                                                }
+                                            )
+                                        }
                                     }
                                 }
                             }
@@ -447,6 +516,7 @@ ApplicationWindow {
 
                             anchors.fill: parent
                             font.pointSize: 20
+
                         }
                     }
                 }
