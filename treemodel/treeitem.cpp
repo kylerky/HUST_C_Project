@@ -9,16 +9,16 @@ namespace HUST_C {
 
 // TreeItem::*
 
-TreeItem::TreeItem(TreeItem *parent) {
+TreeItem::TreeItem(TreeItem *parent) : m_parentItem(parent), m_typeIndex(0) {
     m_iter = new struct Node();
-    m_parentItem = parent;
-    m_typeIndex = 0;
 }
 
 TreeItem::TreeItem(Iter_list &iter, TreeItem *parent, int type)
     : m_iter(iter), m_parentItem(parent), m_typeIndex(type) {}
 
-TreeItem::~TreeItem() {}
+TreeItem::~TreeItem() {
+    qDeleteAll(m_childItems);
+}
 
 TreeItem *TreeItem::child(int row) { return m_childItems.value(row); }
 
@@ -33,13 +33,13 @@ int TreeItem::childNumber() const {
     return 0;
 }
 
-bool TreeItem::removeChildren(int position, int count) {
-    if (position < 0 || position + count > m_childItems.size()) return false;
-
-    for (int row = 0; row != count; ++row) delete m_childItems.takeAt(position);
-
-    return true;
+TreeItem *TreeItem::removeChild(int position) {
+    auto ptr = m_childItems.takeAt(position);
+    delete ptr;
+    return ptr;
 }
+
+
 
 TreeItem *TreeItem::parent() { return m_parentItem; }
 
@@ -59,10 +59,10 @@ ClassTreeItem::~ClassTreeItem() {
 
 void *ClassTreeItem::data() const { return m_iter->data; }
 
-bool ClassTreeItem::insertChild(int position, void *data) {
+TreeItem *ClassTreeItem::insertChild(int position, void *data) {
     Q_UNUSED(position);
     Q_UNUSED(data);
-    return false;
+    return nullptr;
 }
 
 bool ClassTreeItem::setData(void *value) {
@@ -75,7 +75,6 @@ bool ClassTreeItem::setData(void *value) {
 SchoolTreeItem::SchoolTreeItem(Iter_list &iter, TreeItem *parent)
     : TreeItem(iter, parent, 2) {}
 SchoolTreeItem::~SchoolTreeItem() {
-    qDeleteAll(m_childItems);
     delete reinterpret_cast<struct School *>(m_iter->data)->classes.head;
     erase_list(
         reinterpret_cast<struct School *>(m_parentItem->m_iter->data)->classes,
@@ -84,8 +83,8 @@ SchoolTreeItem::~SchoolTreeItem() {
 
 void *SchoolTreeItem::data() const { return m_iter->data; }
 
-bool SchoolTreeItem::insertChild(int position, void *data) {
-    if (position < 0 || position > m_childItems.size()) return false;
+TreeItem *SchoolTreeItem::insertChild(int position, void *data) {
+    if (position < 0 || position > m_childItems.size()) return nullptr;
 
     List *list = &reinterpret_cast<struct School *>(m_iter->data)->classes;
 
@@ -99,7 +98,7 @@ bool SchoolTreeItem::insertChild(int position, void *data) {
     ClassTreeItem *item = new ClassTreeItem(iter_pos, this);
     m_childItems.insert(position, item);
 
-    return true;
+    return item;
 }
 
 bool SchoolTreeItem::setData(void *value) {
@@ -116,7 +115,6 @@ RootTreeItem::RootTreeItem(TreeItem *parent) : TreeItem(parent) {
     m_iter->data = p;
 }
 RootTreeItem::~RootTreeItem() {
-    qDeleteAll(m_childItems);
     delete reinterpret_cast<struct School *>(m_iter->data)->classes.head;
     delete reinterpret_cast<struct School *>(m_iter->data);
     delete m_iter;
@@ -124,8 +122,8 @@ RootTreeItem::~RootTreeItem() {
 
 void *RootTreeItem::data() const { return nullptr; }
 
-bool RootTreeItem::insertChild(int position, void *data) {
-    if (position < 0 || position > m_childItems.size()) return false;
+TreeItem *RootTreeItem::insertChild(int position, void *data) {
+    if (position < 0 || position > m_childItems.size()) return nullptr;
 
     List *list = &reinterpret_cast<struct School *>(m_iter->data)->classes;
 
@@ -136,10 +134,11 @@ bool RootTreeItem::insertChild(int position, void *data) {
 
     iter_pos = insert_before_list(*list, iter_pos, data_);
 
+
     SchoolTreeItem *item = new SchoolTreeItem(iter_pos, this);
     m_childItems.insert(position, item);
 
-    return true;
+    return item;
 }
 
 bool RootTreeItem::setData(void *listp) {

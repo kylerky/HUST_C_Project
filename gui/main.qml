@@ -77,9 +77,24 @@ ApplicationWindow {
                     Text {
                         id: treeBarLargeBtn
                         text: qsTr("School")+qsTr("/")+qsTr("Classes")
-                        width: parent.width - treeBarAddBtn.width
+                        width: parent.width - treeBarAddBtn.width - treeBarDelBtn.width
                         height: parent.height
                     }
+
+                    Button {
+                        id: treeBarDelBtn
+                        cursorShape: Qt.PointingHandCursor
+                        height:parent.height
+                        width:parent.width*0.2
+                        onClicked: {
+                            if (leftSideView.currentIndex.row === 0
+                                    && treeModel.type(leftSideView.currentIndex) === 2)
+                                return;
+
+                            treeModel.removeRow(leftSideView.currentIndex.row);
+                        }
+                    }
+
 
                     Button {
                         id: treeBarAddBtn
@@ -88,12 +103,22 @@ ApplicationWindow {
                         width:parent.width*0.2
                         onClicked: {
                             console.log(leftSideView.currentIndex);
-                            if (leftSideView.currentIndex === treeModel.index(0,0) || leftSideView.currentIndex === treeModel.parent(treeModel.index(0,0)))
-                                return treeModel.insertRows(1, 1);
-                            else if (treeModel.type(leftSideView.currentIndex) === TreeModel.Class)
-                                return treeModel.insertRows(leftSideView.currentIndex.row+1, 1, treeModel.parent(leftSideView.currentIndex));
+                            if (leftSideView.currentIndex === treeModel.index(0,0) || leftSideView.currentIndex === treeModel.parent(treeModel.index(0,0))) {
+                                treeSchoolPopup.isAdd = true;
+                                treeSchoolPopup.open();
+                                return;
+                                //return treeModel.insertRows(1, 1);
+                            } else {
+                                treeClassPopup.isAdd = true;
 
-                            return treeModel.insertRows(0, 1, leftSideView.currentIndex);
+                                if (treeModel.type(leftSideView.currentIndex) === TreeModel.Class)
+                                    treeClassPopup.dataAddType = 0;
+                                else
+                                    treeClassPopup.dataAddType = 1;
+
+                                treeClassPopup.open();
+                                return;
+                            }
                         }
                     }
                 }
@@ -165,7 +190,7 @@ ApplicationWindow {
                                         id: treeviewInfo
                                         width: parent.width*0.8
                                         //anchors.fill: parent
-                                        text: "hi"+styleData.row+model.schoolName
+                                        text: Number(model.type) === 2 ? model.schoolName : model.classNumber
                                         font.pointSize: treeTextMetrics.font.pointSize
                                     }
                                     Button {
@@ -173,13 +198,14 @@ ApplicationWindow {
                                         height: parent.height
                                         visible: true
                                         Component.onCompleted: {
-                                            if (model.index === 0)
+                                            if (model !== null && model.index === 0)
                                                 visible = false;
                                         }
                                         onClicked: {
                                             switch(treeModel.type(leftSideView.currentIndex))
                                             {
                                             case TreeModel.Class:
+                                                treeClassPopup.isAdd = false;
                                                 for (var i=0; i != treeClassPopupLayoutTextField.count; ++i)
                                                     treeClassPopupLayoutTextField.itemAt(i).text="";
 
@@ -193,6 +219,7 @@ ApplicationWindow {
                                                 treeClassPopup.open();
                                                 break;
                                             case TreeModel.School:
+                                                treeSchoolPopup.isAdd = false;
                                                 for (var i=0; i != treeSchoolPopupLayoutTextField.count; ++i)
                                                     treeSchoolPopupLayoutTextField.itemAt(i).text="";
                                                 treeSchoolPopupLayoutTextField.itemAt(0).text = model.schoolName;
@@ -335,9 +362,11 @@ ApplicationWindow {
 
                                             var pass = true;
 
-                                            for (var i = 0; i !== inputs.length; ++i)
-                                                if (!regexps[i].test(inputs[i]))
+                                            for (var i = 0; i !== inputs.length; ++i) {
+                                                if (!regexps[i].test(inputs[i])) {
                                                     pass = false;
+                                                }
+                                            }
 
                                             if (!pass)
                                                 return;
@@ -346,7 +375,7 @@ ApplicationWindow {
                                             tableModel.touchData(tableModel.count-1, inputs[0], "name");
                                             tableModel.touchData(tableModel.count-1, inputs[1], "id");
                                             tableModel.touchData(tableModel.count-1, inputs[2].charCodeAt(0), "gender");
-                                            tableModel.touchData(tableModel.count-1, inputs[3], "age");
+                                            tableModel.touchData(tableModel.count-1, Number(inputs[3]), "age");
                                             tableModel.touchData(tableModel.count-1, Number(inputs[4]), "amount");
 
                                             donorsTable.positionViewAtRow(tableModel.count-1, ListView.Contain);
@@ -403,8 +432,14 @@ ApplicationWindow {
             focus: true
             padding: width*0.04
 
+            property bool isAdd: false
 
             closePolicy: Popup.CloseOnEscape | Popup.CloseOnPressOutside
+
+            onClosed: {
+                for (var i = 0; i < treeSchoolPopupLayoutTextField.count; ++i)
+                    treeSchoolPopupLayoutTextField.itemAt(i).text = "";
+            }
 
             ColumnLayout {
                 id: treeSchoolPopupLayout
@@ -449,8 +484,45 @@ ApplicationWindow {
                                 anchors.centerIn: parent
                                 highlighted: true
                                 Material.background: Material.Teal
-                                text: qsTr("Edit")
+                                text: treeSchoolPopup.isAdd ? qsTr("Add") : qsTr("Edit")
+                                cursorShape: Qt.PointingHandCursor
+                                onClicked: {
+                                    var inputs = [];
+                                    for (var i = 0; i !== treeSchoolPopupLayoutTextField.count; ++i)
+                                        inputs.push(treeSchoolPopupLayoutTextField.itemAt(i).text);
+
+                                    var regexps = [
+                                                /^\w{1,29}$/,
+                                                /^\w{1,19}$/,
+                                                /^[()0-9-]{1,19}$/
+                                            ]
+
+                                    var pass = true;
+
+                                    for (var i = 0; i !== inputs.length; ++i) {
+                                        if (!regexps[i].test(inputs[i])) {
+                                            pass = false;
+                                        }
+                                    }
+
+                                    if (!pass)
+                                        return;
+
+                                    var index;
+                                    if (treeSchoolPopup.isAdd) {
+                                        treeModel.insertRows(1, 1);
+                                        index = treeModel.index(1, 0)
+                                    } else {
+                                        index = leftSideView.currentIndex;
+                                    }
+
+                                    treeModel.setSchoolData(index, inputs[0], "name");
+                                    treeModel.setSchoolData(index, inputs[1], "principal");
+                                    treeModel.setSchoolData(index, inputs[2], "tele");
+                                    treeSchoolPopup.close();
+                                }
                             }
+
                         }
                         Rectangle {
                             height: parent.height
@@ -462,6 +534,7 @@ ApplicationWindow {
                                 highlighted: true
                                 Material.background: Material.Teal
                                 text: qsTr("Cancel")
+                                cursorShape: Qt.PointingHandCursor
                                 onClicked: {
                                     treeSchoolPopup.close();
                                 }
@@ -484,6 +557,10 @@ ApplicationWindow {
              }
 
             id: treeClassPopup
+
+            property int dataAddType: 0
+            property bool isAdd: false
+
             x: parent.width*0.3
             y: parent.height*0.05
             width: parent.width*0.6
@@ -494,6 +571,12 @@ ApplicationWindow {
 
 
             closePolicy: Popup.CloseOnEscape | Popup.CloseOnPressOutside
+
+            onClosed: {
+                for (var i = 0; i < treeClassPopupLayoutTextField.count; ++i)
+                    treeClassPopupLayoutTextField.itemAt(i).text = "";
+            }
+
 
             ColumnLayout {
                 id: treeClassPopupLayout
@@ -537,8 +620,58 @@ ApplicationWindow {
                                 anchors.centerIn: parent
                                 highlighted: true
                                 Material.background: Material.Teal
-                                text: qsTr("Edit")
+                                text: treeClassPopup.isAdd ? qsTr("Add") : qsTr("Edit")
+                                onClicked: {
+                                    var inputs = [];
+                                    for (var i = 0; i !== treeClassPopupLayoutTextField.count; ++i)
+                                        inputs.push(treeClassPopupLayoutTextField.itemAt(i).text);
+
+                                    var regexps = [
+                                                /^\w{1,29}$/,
+                                                /^\w{1,29}$/,
+                                                /^\w{1,9}$/,
+                                                /^\d$/,
+                                                /^\d{1,3}$/
+                                            ]
+
+                                    var pass = true;
+
+                                    for (var i = 0; i !== inputs.length; ++i) {
+                                        if (!regexps[i].test(inputs[i])) {
+                                            pass = false;
+                                        }
+                                    }
+
+                                    if (!pass)
+                                        return;
+
+                                    var index;
+                                    if (treeClassPopup.isAdd) {
+                                        switch (treeClassPopup.dataAddType) {
+                                        case 0:
+                                            treeModel.insertRows(leftSideView.currentIndex.row+1, 1, treeModel.parent(leftSideView.currentIndex));
+                                            index = treeModel.index(leftSideView.currentIndex.row+1, 0, treeModel.parent(leftSideView.currentIndex));
+                                            break;
+                                        case 1:
+                                            treeModel.insertRows(0, 1, leftSideView.currentIndex);
+                                            index = treeModel.index(0, 0, leftSideView.currentIndex)
+                                            break;
+                                        }
+                                    } else {
+                                        index = leftSideView.currentIndex;
+                                    }
+
+                                    treeModel.setClassData(index, inputs[0], "school");
+                                    treeModel.setClassData(index, inputs[1], "instructor");
+                                    treeModel.setClassData(index, inputs[2], "number");
+                                    treeModel.setClassData(index, Number(inputs[3]), "grade");
+                                    treeModel.setClassData(index, Number(inputs[4]), "studentCnt");
+                                    treeClassPopup.close();
+
+                                }
                             }
+
+
                         }
                         Rectangle {
                             height: parent.height
@@ -565,7 +698,21 @@ ApplicationWindow {
 
     }
 
+/*
+    Popup {
+        id: deletePopup
+        closePolicy: Popup.CloseOnEscape | Popup.CloseOnPressOutside
 
+        background: Rectangle {
+            color: "#ffffff"
+            border.width: 0
+            Material.background: Material.Teal
+            Material.elevation: 6
+
+         }
+
+    }
+*/
     footer: Row {
         id: statusBar
         width: parent.width

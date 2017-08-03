@@ -22,12 +22,12 @@ class TreeItem {
     int columnCount() const;
     virtual void *data() const = 0;
 
-    virtual bool insertChild(int position, void *data) = 0;
+    virtual TreeItem *insertChild(int position, void *data) = 0;
 
     int childNumber() const;
     virtual bool setData(void *value) = 0;
 
-    bool removeChildren(int position, int count);
+    TreeItem *removeChild(int position);
 
     TreeItem *parent();
 
@@ -50,7 +50,7 @@ class ClassTreeItem : public TreeItem {
 
     void *data() const override;
 
-    bool insertChild(int position, void *data) override;
+    TreeItem *insertChild(int position, void *data) override;
 
     bool setData(void *value) override;
 };
@@ -64,7 +64,7 @@ class SchoolTreeItem : public TreeItem {
 
     void *data() const override;
 
-    bool insertChild(int position, void *data) override;
+    TreeItem *insertChild(int position, void *data) override;
 
     bool setData(void *value) override;
 };
@@ -78,7 +78,7 @@ class RootTreeItem : public TreeItem {
 
     void *data() const override;
 
-    bool insertChild(int position, void *data) override;
+    TreeItem *insertChild(int position, void *data) override;
 
     virtual bool setData(void *listp) override;
 };

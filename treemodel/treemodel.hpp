@@ -1,6 +1,7 @@
 #ifndef TREEMODEL_H
 #define TREEMODEL_H
 
+#include <set>
 #include <QAbstractItemModel>
 #include <QObject>
 #include "treeitem.hpp"
@@ -10,11 +11,7 @@ class TreeModel : public QAbstractItemModel {
     Q_OBJECT
 
    public:
-    enum ItemType {
-        Root=0,
-        Class=1,
-        School=2
-    };
+    enum ItemType { Root = 0, Class = 1, School = 2 };
 
     Q_ENUMS(ItemType)
 
@@ -27,7 +24,8 @@ class TreeModel : public QAbstractItemModel {
         ClassNumberRole = Qt::UserRole + 5,
         ClassGradeRole = Qt::UserRole + 6,
         ClassStudentCntRole = Qt::UserRole + 7,
-        ClassListPointerRole = Qt::UserRole + 8
+        ClassListPointerRole = Qt::UserRole + 8,
+        TypeRole = Qt::UserRole + 9
     };
 
     TreeModel(QObject *parent = nullptr);
@@ -65,9 +63,7 @@ class TreeModel : public QAbstractItemModel {
 
     bool insertRows(int position, int rows,
                     const QModelIndex &parent = QModelIndex()) override;
-
-    //    List *getList(const QModelIndex &index) const;
-
+    bool removeRow(int position, const QModelIndex &parent = QModelIndex());
     int type(const QModelIndex &index) const;
 
    protected:
@@ -76,12 +72,12 @@ class TreeModel : public QAbstractItemModel {
     bool insertClassRows(int position, int rows, const QModelIndex &parent);
 
     virtual QHash<int, QByteArray> roleNames() const override;
+    std::set<TreeItem *> m_validPtrs;
 
    private:
     QHash<int, QByteArray> m_roleNames;
 
     TreeItem *getItem(const QModelIndex &index) const;
-
     TreeItem *m_rootItem;
 };
 }

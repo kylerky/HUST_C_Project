@@ -1,11 +1,11 @@
 #include "treemodel.hpp"
-#include <iostream>
 #include "treeitem.hpp"
 extern "C" {
 #include "data_def.h"
 #include "list.h"
 }
 #include <cstring>
+#include <QThread>
 
 Q_DECLARE_METATYPE(List *)
 
@@ -20,8 +20,10 @@ TreeModel::TreeModel(QObject *parent) : QAbstractItemModel(parent) {
     m_roleNames[ClassNumberRole] = "classNumber";
     m_roleNames[ClassGradeRole] = "classGrade";
     m_roleNames[ClassStudentCntRole] = "classStudentCnt";
+    m_roleNames[TypeRole] = "type";
 
     m_rootItem = new RootTreeItem();
+    m_validPtrs.insert(m_rootItem);
 }
 
 TreeModel::~TreeModel() { delete m_rootItem; }
@@ -55,6 +57,8 @@ QVariant TreeModel::data(const QModelIndex &index, int role) const {
         case ClassStudentCntRole:
             return reinterpret_cast<struct Classes *>(item->data())
                 ->student_cnt;
+        case TypeRole:
+            return type(index);
     }
 
     return QVariant();
@@ -84,6 +88,9 @@ QModelIndex TreeModel::index(int row, int column,
 
     TreeItem *parentItem = getItem(parent);
 
+    if (m_validPtrs.count(parentItem) != 1)
+        return QModelIndex();
+
     TreeItem *childItem = parentItem->child(row);
 
     if (childItem)
@@ -97,9 +104,7 @@ QModelIndex TreeModel::parent(const QModelIndex &index) const {
 
     TreeItem *childItem = getItem(index);
     TreeItem *parentItem = childItem->parent();
-
-    if (parentItem == m_rootItem) return QModelIndex();
-
+    if (parentItem == m_rootItem || m_validPtrs.count(parentItem) != 1) return QModelIndex();
     return createIndex(parentItem->childNumber(), 0, parentItem);
 }
 
@@ -199,20 +204,22 @@ bool TreeModel::setClassData(const QModelIndex &index, const QVariant &value,
 bool TreeModel::insertSchoolRows(int position, int rows,
                                  const QModelIndex &parent) {
     TreeItem *parentItem = getItem(parent);
-    bool success = true;
+    TreeItem *ptr = parentItem;
 
     struct School empty_school;
     std::memset(&empty_school, 0, sizeof(empty_school));
 
     emit beginInsertRows(parent, position, position + rows - 1);
 
-    for (int i = 0; i != rows && success; ++i) {
+    for (int i = 0; i != rows && ptr; ++i) {
         empty_school.classes = create_list();
-        success = parentItem->insertChild(position, &empty_school);
+        ptr = parentItem->insertChild(position, &empty_school);
+        if (ptr)
+            m_validPtrs.insert(ptr);
     }
 
     emit endInsertRows();
-    return success;
+    return ptr != nullptr;
 }
 
 bool TreeModel::insertClassRows(int position, int rows,
@@ -223,30 +230,44 @@ bool TreeModel::insertClassRows(int position, int rows,
 
     TreeItem *parentItem = getItem(parent);
 
-    bool success = true;
+    TreeItem *ptr = parentItem;
 
     struct Classes empty_class;
     std::memset(&empty_class, 0, sizeof(empty_class));
 
     emit beginInsertRows(parent, position, position + rows - 1);
 
-    for (int i = 0; i != rows && success; ++i) {
+    for (int i = 0; i != rows && ptr; ++i) {
         empty_class.donors = create_list();
-        success = parentItem->insertChild(position, &empty_class);
+        ptr = parentItem->insertChild(position, &empty_class);
+        if (ptr)
+            m_validPtrs.insert(ptr);
     }
     emit endInsertRows();
-    return success;
+    return ptr != nullptr;
 }
 
 bool TreeModel::removeRows(int position, int rows, const QModelIndex &parent) {
-    TreeItem *parentItem = getItem(parent);
     bool success = true;
 
     emit beginRemoveRows(parent, position, position + rows - 1);
-    success = parentItem->removeChildren(position, rows);
+    for (int i = 0; i != rows && success; ++i)
+        success = removeRow(position, parent);
     emit endRemoveRows();
 
     return success;
+}
+bool TreeModel::removeRow(int position, const QModelIndex &parent) {
+    if (!parent.isValid()) return false;
+    TreeItem *parentItem = getItem(parent);
+    TreeItem *ptr = parentItem;
+
+    emit beginRemoveRows(parent, position, position);
+    ptr = parentItem->removeChild(position);
+    m_validPtrs.erase(ptr);
+    emit endRemoveRows();
+
+    return ptr != nullptr;
 }
 
 TreeItem *TreeModel::getItem(const QModelIndex &index) const {
@@ -258,16 +279,6 @@ TreeItem *TreeModel::getItem(const QModelIndex &index) const {
 }
 
 QHash<int, QByteArray> TreeModel::roleNames() const { return m_roleNames; }
-/*
-List *TreeModel::getList(const QModelIndex &index) const {
-    if (!index.isValid() || type(index) != 1) return nullptr;
-
-    TreeItem *item = getItem(index);
-
-    List *list = &reinterpret_cast<struct Classes *>(item->data())->donors;
-
-    return &reinterpret_cast<struct Classes *>(item->data())->donors;
-}*/
 
 int TreeModel::type(const QModelIndex &index) const {
     return reinterpret_cast<TreeItem *>(index.internalPointer())->typeIndex();
