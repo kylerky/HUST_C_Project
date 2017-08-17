@@ -1,10 +1,12 @@
 #include <QGuiApplication>
 #include <QQmlApplicationEngine>
+#include <QtQuickControls2/QQuickStyle>
 #include "tablemodel.hpp"
 #include "treeitem.hpp"
 #include "treemodel.hpp"
 
 int main(int argc, char *argv[]) {
+    QQuickStyle::setStyle("Material");
     QGuiApplication app(argc, argv);
 
     qmlRegisterType<HUST_C::TreeModel>("hust.kyle", 1, 0, "TreeModel");

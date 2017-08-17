@@ -4,8 +4,8 @@ extern "C" {
 #include "data_def.h"
 #include "list.h"
 }
-#include <cstring>
 #include <QThread>
+#include <cstring>
 
 Q_DECLARE_METATYPE(List *)
 
@@ -88,8 +88,7 @@ QModelIndex TreeModel::index(int row, int column,
 
     TreeItem *parentItem = getItem(parent);
 
-    if (m_validPtrs.count(parentItem) != 1)
-        return QModelIndex();
+    if (m_validPtrs.count(parentItem) != 1) return QModelIndex();
 
     TreeItem *childItem = parentItem->child(row);
 
@@ -104,7 +103,8 @@ QModelIndex TreeModel::parent(const QModelIndex &index) const {
 
     TreeItem *childItem = getItem(index);
     TreeItem *parentItem = childItem->parent();
-    if (parentItem == m_rootItem || m_validPtrs.count(parentItem) != 1) return QModelIndex();
+    if (parentItem == m_rootItem || m_validPtrs.count(parentItem) != 1)
+        return QModelIndex();
     return createIndex(parentItem->childNumber(), 0, parentItem);
 }
 
@@ -214,8 +214,7 @@ bool TreeModel::insertSchoolRows(int position, int rows,
     for (int i = 0; i != rows && ptr; ++i) {
         empty_school.classes = create_list();
         ptr = parentItem->insertChild(position, &empty_school);
-        if (ptr)
-            m_validPtrs.insert(ptr);
+        if (ptr) m_validPtrs.insert(ptr);
     }
 
     emit endInsertRows();
@@ -240,8 +239,7 @@ bool TreeModel::insertClassRows(int position, int rows,
     for (int i = 0; i != rows && ptr; ++i) {
         empty_class.donors = create_list();
         ptr = parentItem->insertChild(position, &empty_class);
-        if (ptr)
-            m_validPtrs.insert(ptr);
+        if (ptr) m_validPtrs.insert(ptr);
     }
     emit endInsertRows();
     return ptr != nullptr;
@@ -250,10 +248,8 @@ bool TreeModel::insertClassRows(int position, int rows,
 bool TreeModel::removeRows(int position, int rows, const QModelIndex &parent) {
     bool success = true;
 
-    emit beginRemoveRows(parent, position, position + rows - 1);
     for (int i = 0; i != rows && success; ++i)
         success = removeRow(position, parent);
-    emit endRemoveRows();
 
     return success;
 }
