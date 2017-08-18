@@ -6,6 +6,7 @@ extern "C" {
 }
 #include <QThread>
 #include <cstring>
+#include <iostream>
 
 Q_DECLARE_METATYPE(List *)
 

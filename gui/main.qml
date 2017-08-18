@@ -347,16 +347,6 @@ ApplicationWindow {
                                     height: parent.height
                                     cellHeight:parent.height*0.5
                                     cellWidth:parent.width*0.23
-/*
-
-                                    var regexps = [
-                                                /^\w{1,19}$/,
-                                                /^\w{1,10}$/,
-                                                /^[fmx]$/,
-                                                /^\d{1,3}$/,
-                                                /^[0-9.]+$/
-                                            ]
-*/
                                     model: [
                                         {
                                             placeholder: qsTr("name"),
