@@ -30,9 +30,6 @@ int main(int argc, char *argv[]) {
                 HUST_C::ErrorMsg::errMsg = "Cannot create directory \"donation_data\"";
             }
         }
-
-        if (HUST_C::ErrorMsg::errMsg.empty() && !QDir::setCurrent("donation_data"))
-            HUST_C::ErrorMsg::errMsg = "Cannot enter donation_data. (not a directory?)";
     }
 
     if (HUST_C::ErrorMsg::errMsg.empty())
