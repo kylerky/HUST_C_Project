@@ -22,6 +22,32 @@ ApplicationWindow {
     x: (Screen.width-width)/2
     y: (Screen.height-height)/2
 
+    onClosing: {
+        treeModel.writeTree();
+        if (tableModel.rowCount() !== 0)
+            treeModel.writeItem(leftSideView.currentIndex);
+    }
+
+    Timer {
+        id: treeWriteTimer
+        interval: 2000
+        repeat: true
+        running: false
+        onTriggered: {
+            treeModel.writeTree();
+        }
+    }
+
+    Component.onCompleted: {
+        treeModel.readAll();
+        if (treeModel.rowCount() === 0) {
+            treeModel.insertRows(0, 1, leftSideView.currentIndex);
+            treeModel.setSchoolData(treeModel.index(0,0,treeModel.rowIndex), qsTr("School"), "name");
+        }
+
+        treeWriteTimer.start();
+    }
+
     Row {
         anchors.fill: parent
         Rectangle{
@@ -146,10 +172,6 @@ ApplicationWindow {
                         TreeView {
                             id: leftSideView
                             anchors.fill: parent
-                            Component.onCompleted: {
-                                treeModel.insertRows(0, 1, leftSideView.currentIndex);
-                                treeModel.setSchoolData(treeModel.index(0,0,treeModel.rowIndex), qsTr("School"), "name");
-                            }
 
                             TreeModel {
                                 id: treeModel
@@ -161,10 +183,12 @@ ApplicationWindow {
                                 }
                             }
 
-
                             onCurrentIndexChanged: {
-                                console.log("index changed");
-                                tableModel.setList(treeModel.getDonors(leftSideView.currentIndex));
+                                var last = treeModel.getLastIndex();
+                                treeModel.setLastIndex(leftSideView.currentIndex);
+                                var list = treeModel.getDonors(leftSideView.currentIndex);
+                                tableModel.setList(list);
+                                treeModel.writeItem(last);
                             }
 
                             Layout.fillHeight: true
@@ -319,14 +343,14 @@ ApplicationWindow {
                                 }
                             }
                             rowDelegate: Rectangle {
-                                color: styleData.alternate?"#f5f5f6":"#ffffff"
+                                color: styleData.selected ? "#b3b3b3" :  styleData.alternate?"#f5f5f6":"#ffffff"
                                 height: tableTextMetrics.height
                             }
 
                             itemDelegate: Item {
                                 id: treeItem
                                 Text {
-                                    text: styleData.role !== "amount"? styleData.value : styleData.value.toPrecision(3)
+                                    text: styleData.role !== "amount"? styleData.value : Number(styleData.value).toFixed(2)
                                     color: "black"
                                 }
                             }

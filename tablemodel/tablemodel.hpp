@@ -6,8 +6,11 @@
 extern "C" {
 #include "list.h"
 }
-
+#ifndef Q_DECLARE_METATYPE_LIST_POINTER
+#define Q_DECLARE_METATYPE_LIST_POINTER
 Q_DECLARE_METATYPE(List *)
+#endif
+
 namespace HUST_C {
 class TableModel : public QAbstractItemModel {
     Q_OBJECT

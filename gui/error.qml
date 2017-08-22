@@ -31,12 +31,8 @@ ApplicationWindow {
 
         font.pointSize: 22
 
-        LaunchErrMsg {
-            id: errMsg
-        }
-
         Text {
-            text: errMsg.what()
+            text: LaunchErrMsg.what()
             font.pointSize: 20
         }
     }

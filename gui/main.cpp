@@ -4,10 +4,19 @@
 #include <QString>
 #include <QLockFile>
 #include <QDir>
+#include <iostream>
 #include "tablemodel.hpp"
 #include "treeitem.hpp"
 #include "treemodel.hpp"
 #include "launcherrmsg.hpp"
+
+inline static QObject *launch_err_singletontype_provider(QQmlEngine *engine, QJSEngine *scriptEngine) {
+    Q_UNUSED(engine);
+    Q_UNUSED(scriptEngine);
+
+    return new HUST_C::LaunchErrMsg();
+}
+
 
 int main(int argc, char *argv[]) {
     QQuickStyle::setStyle("Material");
@@ -21,21 +30,22 @@ int main(int argc, char *argv[]) {
     QLockFile lockFile("donation.lock");
     lockFile.setStaleLockTime(0);
 
-    if (!lockFile.tryLock(100))
+    if (!QDir("donation_data").exists())
+        if (!QDir().mkdir("donation_data"))
+            HUST_C::ErrorMsg::errMsg = "Cannot create directory \"donation_data\"";
+
+
+    if (HUST_C::ErrorMsg::errMsg.empty() && !QDir::setCurrent("donation_data"))
+        HUST_C::ErrorMsg::errMsg = "Cannot enter directory \"donation_data\"";
+
+
+    if (HUST_C::ErrorMsg::errMsg.empty() && !lockFile.tryLock(100))
         HUST_C::ErrorMsg::errMsg = "Another instance of the application is running, will close this one.";
-    else {
-        QDir dir("donation_data");
-        if (!dir.exists()) {
-            if (!QDir().mkdir("donation_data")) {
-                HUST_C::ErrorMsg::errMsg = "Cannot create directory \"donation_data\"";
-            }
-        }
-    }
 
     if (HUST_C::ErrorMsg::errMsg.empty())
         engine.load(QUrl(QStringLiteral("qrc:/main.qml")));
     else {
-        qmlRegisterType<HUST_C::LaunchErrMsg>("hust.kyle", 1, 0, "LaunchErrMsg");
+        qmlRegisterSingletonType<HUST_C::LaunchErrMsg>("hust.kyle", 1, 0, "LaunchErrMsg", launch_err_singletontype_provider);
         engine.load(QUrl(QStringLiteral("qrc:/error.qml")));
     }
 

@@ -22,10 +22,6 @@ TreeItem::~TreeItem() {
 
 TreeItem *TreeItem::child(int row) { return m_childItems.value(row); }
 
-int TreeItem::childCount() const { return m_childItems.count(); }
-
-int TreeItem::columnCount() const { return 1; }
-
 int TreeItem::childNumber() const {
     if (m_parentItem)
         return m_parentItem->m_childItems.indexOf(const_cast<TreeItem *>(this));
@@ -39,11 +35,6 @@ TreeItem *TreeItem::removeChild(int position) {
     return ptr;
 }
 
-
-
-TreeItem *TreeItem::parent() { return m_parentItem; }
-
-int TreeItem::typeIndex() const { return m_typeIndex; }
 
 // ClassTreeItem::*
 

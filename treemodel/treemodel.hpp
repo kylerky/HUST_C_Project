@@ -6,6 +6,11 @@
 #include <QObject>
 #include "treeitem.hpp"
 
+#ifndef Q_DECLARE_METATYPE_LIST_POINTER
+#define Q_DECLARE_METATYPE_LIST_POINTER
+Q_DECLARE_METATYPE(List *)
+#endif
+
 namespace HUST_C {
 class TreeModel : public QAbstractItemModel {
     Q_OBJECT
@@ -56,7 +61,7 @@ class TreeModel : public QAbstractItemModel {
                        const QString &role);
 
     bool setClassData(const QModelIndex &index, const QVariant &val,
-                      QString role);
+                      const QString &role);
 
     bool removeRows(int position, int rows,
                     const QModelIndex &parent = QModelIndex()) override;
@@ -66,6 +71,13 @@ class TreeModel : public QAbstractItemModel {
     bool removeRow(int position, const QModelIndex &parent = QModelIndex());
     int type(const QModelIndex &index) const;
 
+    void setLastIndex(const QModelIndex &index);
+    QModelIndex getLastIndex() const;
+
+
+    bool writeItem(const QModelIndex &index);
+    bool writeTree();
+    bool readAll();
    protected:
     bool insertSchoolRows(int position, int rows, const QModelIndex &parent);
 
@@ -79,6 +91,10 @@ class TreeModel : public QAbstractItemModel {
 
     TreeItem *getItem(const QModelIndex &index) const;
     TreeItem *m_rootItem;
+    QModelIndex m_lastIndex;
+
+    unsigned m_classCnt = 0;
+    unsigned m_schoolCnt= 0;
 };
 }
 #endif  // TREEMODEL_H

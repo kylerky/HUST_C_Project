@@ -18,8 +18,8 @@ class TreeItem {
     virtual ~TreeItem();
 
     TreeItem *child(int row);
-    int childCount() const;
-    int columnCount() const;
+    int childCount() const { return m_childItems.count(); }
+    int columnCount() const { return 1; }
     virtual void *data() const = 0;
 
     virtual TreeItem *insertChild(int position, void *data) = 0;
@@ -29,16 +29,22 @@ class TreeItem {
 
     TreeItem *removeChild(int position);
 
-    TreeItem *parent();
+    TreeItem *parent() { return m_parentItem; }
+    int typeIndex() const { return m_typeIndex; }
 
-    int typeIndex() const;
+    unsigned long getIndex() const {return m_index;}
+    void setIndex(unsigned long index) {m_index = index;}
 
+    QList<TreeItem*>::const_iterator child_cbeg() const {return m_childItems.cbegin();}
+    QList<TreeItem*>::const_iterator child_cend() const {return m_childItems.cend();}
    protected:
     Iter_list m_iter;
 
     QList<TreeItem *> m_childItems;
     TreeItem *m_parentItem;
     int m_typeIndex;
+private:
+    unsigned long m_index = 0;
 };
 
 // class ClassTreeItem
