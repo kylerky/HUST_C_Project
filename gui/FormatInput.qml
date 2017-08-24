@@ -36,7 +36,7 @@ Rectangle {
         font.pointSize: 20
         onTextChanged: {
             var reg = new RegExp(root.regexp);
-            var input = text.replace(/\s+$/g, "");
+            var input = text.replace(/(\s+$)|(^\s+)/g, "");
             if (reg.test(input))
                 root.state = "";
             else

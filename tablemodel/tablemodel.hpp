@@ -25,6 +25,8 @@ class TableModel : public QAbstractItemModel {
         AmountRole = Qt::UserRole + 4
     };
 
+    Q_ENUMS(RoleNames)
+
     explicit TableModel(QObject *parent = nullptr);
     ~TableModel();
 
@@ -48,7 +50,7 @@ class TableModel : public QAbstractItemModel {
     void clear();
 
     QModelIndex index(int row, int column,
-                      const QModelIndex &parent) const override;
+                      const QModelIndex &parent = QModelIndex()) const override;
     QModelIndex parent(const QModelIndex &child) const override;
    signals:
     void countChanged(int cnt);

@@ -303,6 +303,40 @@ ApplicationWindow {
                             width: parent.width
                             height: parent.height-editArea.height
 
+                            Connections {
+                                target: donorsTable.selection
+                                onSelectionChanged: {
+                                    if (donorsTable.selection.count === 1) {
+                                        editArea.state = "edit";
+                                        var text = [];
+
+                                        donorsTable.selection.forEach(
+                                            function(row) {
+                                                var index = tableModel.index(row, 0);
+
+                                                text.push(tableModel.data(index, TableModel.NameRole));
+                                                text.push(tableModel.data(index, TableModel.IdRole));
+                                                text.push(tableModel.data(index, TableModel.GenderRole));
+                                                text.push(tableModel.data(index, TableModel.AgeRole));
+                                                text.push(tableModel.data(index, TableModel.AmountRole));
+                                            }
+                                        );
+
+                                        var cnt = 0;
+                                        for (var i = 0; i !== donorsInputView.contentItem.children.length; ++i)
+                                        {
+                                            if (donorsInputView.contentItem.children[i].hasOwnProperty("text"))
+                                            {
+                                                donorsInputView.contentItem.children[i].text = text[cnt];
+                                                ++cnt;
+                                            }
+                                        }
+                                    }
+                                    else
+                                        editArea.state = "";
+                                }
+                            }
+
                             model: TableModel {
                                 id: tableModel
                             }
@@ -360,192 +394,215 @@ ApplicationWindow {
                             id: editArea
                             color: "#e1e2e1"
                             height: parent.height*0.2
+                            states: [
+                                State {
+                                    name: "edit"
+                                    PropertyChanges {
+                                        target: tableAddBtn;
+                                        text: "edit";
+                                    }
+                                }
+                            ]
                             width: parent.width
-                                GridView {
-                                    id: donorsInputView
+                            GridView {
+                                id: donorsInputView
 
-                                    interactive: false
-                                    anchors.centerIn: parent
-                                    clip: true
-                                    width: (parent.width-editAreaAddBtn.width)*0.95
-                                    height: parent.height
-                                    cellHeight:parent.height*0.5
-                                    cellWidth:parent.width*0.23
-                                    model: [
-                                        {
-                                            placeholder: qsTr("name"),
-                                            format: qsTr('should include only a-z, A-Z, 0-9 and "_", at most 19 characters'),
-                                            regexp: /^\w{1,19}$/
-                                        },
-                                        {
-                                            placeholder: qsTr("id"),
-                                            format: qsTr('should include only a-z, A-Z, 0-9 and "_", at most 10 characters'),
-                                            regexp: /^\w{1,10}$/
-                                        },
-                                        {
-                                            placeholder: qsTr("gender"),
-                                            format: qsTr('"f" for female, "m" for male, "x" for others'),
-                                            regexp: /^[fmx]$/
-                                        },
-                                        {
-                                            placeholder: qsTr("age"),
-                                            format: qsTr("should include 1-3 digits"),
-                                            regexp: /^\d{1,3}$/
-                                        },
-                                        {
-                                            placeholder: qsTr("amount"),
-                                            format: qsTr("should be a real number"),
-                                            regexp: /^[0-9.]+$/
+                                interactive: false
+                                anchors.centerIn: parent
+                                clip: true
+                                width: (parent.width-editAreaAddBtn.width)*0.95
+                                height: parent.height
+                                cellHeight:parent.height*0.5
+                                cellWidth:parent.width*0.23
+                                model: [
+                                    {
+                                        placeholder: qsTr("name"),
+                                        format: qsTr('should include only a-z, A-Z, 0-9 and "_", at most 19 characters'),
+                                        regexp: /^\w{1,19}$/
+                                    },
+                                    {
+                                        placeholder: qsTr("id"),
+                                        format: qsTr('should include only a-z, A-Z, 0-9 and "_", at most 10 characters'),
+                                        regexp: /^\w{1,10}$/
+                                    },
+                                    {
+                                        placeholder: qsTr("gender"),
+                                        format: qsTr('"f" for female, "m" for male, "x" for others'),
+                                        regexp: /^[fmxs]$/
+                                    },
+                                    {
+                                        placeholder: qsTr("age"),
+                                        format: qsTr("should include 1-3 digits"),
+                                        regexp: /^\d{1,3}$/
+                                    },
+                                    {
+                                        placeholder: qsTr("amount"),
+                                        format: qsTr("should be a real number"),
+                                        regexp: /^[0-9.]+$/
+                                    }
+                                ]
+
+                                delegate: Rectangle {
+                                    states: [
+                                        State {
+                                            name: "invalid"
+                                            PropertyChanges {
+                                                target: studentInputErr;
+                                                visible: true;
+                                            }
+                                            PropertyChanges {
+                                                target: studentInput;
+                                                color: "red";
+                                            }
                                         }
                                     ]
-
-                                    delegate: Rectangle {
-                                        states: [
-                                            State {
-                                                name: "invalid"
-                                                PropertyChanges {
-                                                    target: studentInputErr;
-                                                    visible: true;
-                                                }
-                                                PropertyChanges {
-                                                    target: studentInput;
-                                                    color: "red";
-                                                }
-                                            }
-                                        ]
-                                        id: studentInputWrapper
-                                        height:parent.height*0.5
-                                        width:parent.width*0.23
-                                        property alias text: studentInput.text
-                                        Row {
+                                    id: studentInputWrapper
+                                    height:parent.height*0.5
+                                    width:parent.width*0.23
+                                    property alias text: studentInput.text
+                                    Row {
+                                        width: parent.width
+                                        height: parent.height
+                                        TextField {
+                                            anchors.verticalCenter: parent.verticalCenter
                                             width: parent.width
-                                            height: parent.height
-                                            TextField {
-                                                anchors.verticalCenter: parent.verticalCenter
-                                                width: parent.width
-                                                id: studentInput
-                                                placeholderText: modelData.placeholder
-                                                font.pointSize: 20
-                                                selectByMouse: true
-                                                background: Rectangle {
-                                                    border.width: 0
-                                                }
-                                                color: "black"
-                                                onDisplayTextChanged: {
-                                                    var input = text.replace(/\s+$/g, "");
-                                                    if (!modelData.regexp.test(text))
-                                                        studentInputWrapper.state = "invalid";
-                                                    else
-                                                        studentInputWrapper.state = "";
-                                                }
+                                            id: studentInput
+                                            placeholderText: modelData.placeholder
+                                            font.pointSize: 20
+                                            selectByMouse: true
+                                            background: Rectangle {
+                                                border.width: 0
                                             }
-                                            Button {
-                                                id: studentInputErr
-                                                background: Rectangle {
-                                                    opacity: 0
-                                                }
-
-                                                contentItem: Text {
-                                                    text: "  \u24D8"
-                                                    color: "red"
-                                                }
-                                                hoverEnabled: true
-                                                cursorShape: Qt.PointingHandCursor
-                                                anchors.baseline: studentInput.baseline
-                                                font.pointSize: 12
-                                                visible: false
-
-                                                ToolTip.text: modelData.format
-                                                ToolTip.visible: hovered
-                                                ToolTip.delay: 500
+                                            color: "black"
+                                            onDisplayTextChanged: {
+                                                var input = text.replace(/(\s+$)|(^\s+)/g, "");
+                                                if (!modelData.regexp.test(input))
+                                                    studentInputWrapper.state = "invalid";
+                                                else
+                                                    studentInputWrapper.state = "";
                                             }
                                         }
-                                    }
-
-                                }
-
-                                Rectangle {
-                                    color: "#e1e2e1"
-                                    anchors.right: parent.right
-                                    id: editAreaAddBtn
-                                    width: parent.width*0.2
-                                    height: parent.height
-                                    Column {
-                                        anchors.fill: parent
                                         Button {
-                                            contentItem: Text {
-                                                text: "add"
-                                                color: "#696969"
-                                                horizontalAlignment: Text.AlignHCenter
-                                                verticalAlignment: Text.AlignVCenter
-                                                font.pointSize: 24
+                                            id: studentInputErr
+                                            background: Rectangle {
+                                                opacity: 0
                                             }
 
-                                            width: parent.width
-                                            height: parent.height*0.5
+                                            contentItem: Text {
+                                                text: "  \u24D8"
+                                                color: "red"
+                                            }
+                                            hoverEnabled: true
                                             cursorShape: Qt.PointingHandCursor
-                                            font.pointSize: 20
-                                            onClicked: {
-                                                var inputs = [];
-                                                var elems = [];
-                                                for (var i = 0; i !== donorsInputView.contentItem.children.length; ++i)
+                                            anchors.baseline: studentInput.baseline
+                                            font.pointSize: 12
+                                            visible: false
+
+                                            ToolTip.text: modelData.format
+                                            ToolTip.visible: hovered
+                                            ToolTip.delay: 500
+                                        }
+                                    }
+                                }
+
+                            }
+
+                            Rectangle {
+                                color: "#e1e2e1"
+                                anchors.right: parent.right
+                                id: editAreaAddBtn
+                                width: parent.width*0.2
+                                height: parent.height
+                                Column {
+                                    anchors.fill: parent
+                                    Button {
+                                        contentItem: Text {
+                                            id: tableAddBtn
+                                            text: "add"
+                                            color: "#696969"
+                                            horizontalAlignment: Text.AlignHCenter
+                                            verticalAlignment: Text.AlignVCenter
+                                            font.pointSize: 24
+                                        }
+
+                                        width: parent.width
+                                        height: parent.height*0.5
+                                        cursorShape: Qt.PointingHandCursor
+                                        font.pointSize: 20
+
+                                        onClicked: {
+                                            var inputs = [];
+                                            var elems = [];
+                                            for (var i = 0; i !== donorsInputView.contentItem.children.length; ++i)
+                                            {
+                                                if (donorsInputView.contentItem.children[i].hasOwnProperty("text"))
                                                 {
-                                                    if (donorsInputView.contentItem.children[i].hasOwnProperty("text"))
-                                                    {
-                                                        var text = donorsInputView.contentItem.children[i].text.replace(/\s+$/g, "");
-                                                        inputs.push(text);
-                                                        elems.push(donorsInputView.contentItem.children[i]);
-                                                        donorsInputView.contentItem.children[i].text = text;
-                                                    }
+                                                    var text = donorsInputView.contentItem.children[i].text.replace(/(\s+$)|(^\s+)/g, "");
+                                                    inputs.push(text);
+                                                    elems.push(donorsInputView.contentItem.children[i]);
+                                                    donorsInputView.contentItem.children[i].text = text;
                                                 }
+                                            }
 
-                                                var pass = true;
+                                            var pass = true;
 
-                                                for (var i = 0; i !== inputs.length; ++i) {
-                                                    if (!donorsInputView.model[i].regexp.test(inputs[i])) {
-                                                        elems[i].state = "invalid";
-                                                        pass = false;
-                                                    }
+                                            for (var i = 0; i !== inputs.length; ++i) {
+                                                if (!donorsInputView.model[i].regexp.test(inputs[i])) {
+                                                    elems[i].state = "invalid";
+                                                    pass = false;
                                                 }
-
-                                                if (!pass)
-                                                    return;
-
-                                                tableModel.insert(tableModel.count);
-                                                tableModel.touchData(tableModel.count-1, inputs[0], "name");
-                                                tableModel.touchData(tableModel.count-1, inputs[1], "id");
-                                                tableModel.touchData(tableModel.count-1, inputs[2].charCodeAt(0), "gender");
-                                                tableModel.touchData(tableModel.count-1, Number(inputs[3]), "age");
-                                                tableModel.touchData(tableModel.count-1, Number(inputs[4]), "amount");
-
-                                                donorsTable.positionViewAtRow(tableModel.count-1, ListView.Contain);
                                             }
-                                        }
-                                        Button {
-                                            contentItem: Text {
-                                                text: "delete"
-                                                color: "#696969"
-                                                horizontalAlignment: Text.AlignHCenter
-                                                verticalAlignment: Text.AlignVCenter
-                                                font.pointSize: 24
-                                            }
-                                             width: parent.width
-                                            height: parent.height*0.5
-                                            cursorShape: Qt.PointingHandCursor
-                                            font.pointSize: 20
 
-                                            onClicked: {
-                                                var cnt = 0;
+                                            if (!pass)
+                                                return;
+
+                                            var row;
+                                            if (editArea.state === "edit") {
+
                                                 donorsTable.selection.forEach(
-                                                    function(row) {
-                                                        tableModel.remove(row-cnt);
-                                                        ++cnt;
+                                                    function(data) {
+                                                        row = data;
                                                     }
-                                                )
+                                                );
+                                            } else {
+                                                tableModel.insert(tableModel.count);
+                                                row = talbeModel.count-1;
                                             }
+
+                                            tableModel.touchData(row, inputs[0], "name");
+                                            tableModel.touchData(row, inputs[1], "id");
+                                            tableModel.touchData(row, inputs[2].charCodeAt(0), "gender");
+                                            tableModel.touchData(row, Number(inputs[3]), "age");
+                                            tableModel.touchData(row, Number(inputs[4]), "amount");
+
+                                            donorsTable.positionViewAtRow(row, ListView.Contain);
+                                        }
+                                    }
+                                    Button {
+                                        contentItem: Text {
+                                            text: "delete"
+                                            color: "#696969"
+                                            horizontalAlignment: Text.AlignHCenter
+                                            verticalAlignment: Text.AlignVCenter
+                                            font.pointSize: 24
+                                        }
+                                         width: parent.width
+                                        height: parent.height*0.5
+                                        cursorShape: Qt.PointingHandCursor
+                                        font.pointSize: 20
+
+                                        onClicked: {
+                                            var cnt = 0;
+                                            donorsTable.selection.forEach(
+                                                function(row) {
+                                                    tableModel.remove(row-cnt);
+                                                    ++cnt;
+                                                }
+                                            )
                                         }
                                     }
                                 }
+                            }
                         }
 
                     }
@@ -867,8 +924,6 @@ ApplicationWindow {
                                 }
 
                             }
-
-
                         }
                     }
                 }
