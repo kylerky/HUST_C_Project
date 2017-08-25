@@ -710,8 +710,11 @@ ApplicationWindow {
                                 cursorShape: Qt.PointingHandCursor
                                 onClicked: {
                                     var inputs = [];
-                                    for (var i = 0; i !== treeSchoolPopupLayoutTextField.count; ++i)
-                                        inputs.push(treeSchoolPopupLayoutTextField.itemAt(i).text);
+                                    for (var i = 0; i !== treeSchoolPopupLayoutTextField.count; ++i) {
+                                        var elem = treeSchoolPopupLayoutTextField.itemAt(i);
+                                        inputs.push(elem.text.replace(/(\s+$)|(^\s+)/g, ""));
+                                        elem.text = inputs[i];
+                                    }
 
                                     var pass = true;
 
@@ -864,8 +867,11 @@ ApplicationWindow {
                                 text: treeClassPopup.isAdd ? qsTr("Add") : qsTr("Edit")
                                 onClicked: {
                                     var inputs = [];
-                                    for (var i = 0; i !== treeClassPopupLayoutTextField.count; ++i)
-                                        inputs.push(treeClassPopupLayoutTextField.itemAt(i).text);
+                                    for (var i = 0; i !== treeClassPopupLayoutTextField.count; ++i) {
+                                        var elem = treeClassPopupLayoutTextField.itemAt(i);
+                                        inputs.push(elem.text.replace(/(\s+$)|(^\s+)/g, ""));
+                                        elem.text = inputs[i];
+                                    }
 
                                     var pass = true;
 
@@ -873,7 +879,7 @@ ApplicationWindow {
                                         var reg = new RegExp(treeClassPopupLayoutTextField.model[i].reg);
                                         if (!reg.test(inputs[i])) {
                                             pass = false;
-                                            treeSchoolPopupLayoutTextField.itemAt(i).state = "invalid";
+                                            treeClassPopupLayoutTextField.itemAt(i).state = "invalid";
                                         }
                                     }
 
