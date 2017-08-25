@@ -1,7 +1,10 @@
 #ifndef TREEMODEL_H
 #define TREEMODEL_H
 
-#include <set>
+#include <unordered_set>
+#include <map>
+#include <unordered_map>
+#include <string>
 #include <QAbstractItemModel>
 #include <QObject>
 #include "treeitem.hpp"
@@ -84,7 +87,7 @@ class TreeModel : public QAbstractItemModel {
     bool insertClassRows(int position, int rows, const QModelIndex &parent);
 
     virtual QHash<int, QByteArray> roleNames() const override;
-    std::set<TreeItem *> m_validPtrs;
+    std::unordered_set<TreeItem *> m_validPtrs;
 
    private:
     QHash<int, QByteArray> m_roleNames;

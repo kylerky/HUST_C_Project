@@ -52,6 +52,8 @@ class TableModel : public QAbstractItemModel {
     QModelIndex index(int row, int column,
                       const QModelIndex &parent = QModelIndex()) const override;
     QModelIndex parent(const QModelIndex &child) const override;
+
+    void sort_table(const QString &role, bool ascend = true);
    signals:
     void countChanged(int cnt);
 

@@ -62,7 +62,7 @@ struct Donor {
     char id[11];
     char sex;
     int age;
-    float amount;
+    unsigned long amount;
 };
 
 #endif  // DATA_DEF_H

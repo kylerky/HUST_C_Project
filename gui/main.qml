@@ -175,12 +175,6 @@ ApplicationWindow {
 
                             TreeModel {
                                 id: treeModel
-                                onRowsInserted: {
-                                    console.log("rows inserted");
-                                }
-                                onDataChanged: {
-                                    console.log("changed");
-                                }
                             }
 
                             onCurrentIndexChanged: {
@@ -211,17 +205,20 @@ ApplicationWindow {
                             }
 
                             rowDelegate: Rectangle {
-                                color: "#8e8e8e"
-
+                                color: styleData.selected?"#616161":"#8e8e8e"
                                 width: parent.width
                                 height: treeTextMetrics.height*1.2
                             }
 
                             itemDelegate: Button {
+                                clip: true
                                 cursorShape: Qt.PointingHandCursor
-                                Rectangle {
+                                Material.background: styleData.selected?"#616161":"#8e8e8e"
+                                Material.elevation: 0
+
+                                contentItem: Rectangle {
                                     anchors.fill: parent
-                                    color: styleData.selected?"#616161":"#8e8e8e"
+                                    color: Qt.rgba(0,0,0,0)
                                     Row{
                                         anchors.fill: parent
                                         Text {
@@ -318,7 +315,7 @@ ApplicationWindow {
                                                 text.push(tableModel.data(index, TableModel.IdRole));
                                                 text.push(tableModel.data(index, TableModel.GenderRole));
                                                 text.push(tableModel.data(index, TableModel.AgeRole));
-                                                text.push(tableModel.data(index, TableModel.AmountRole));
+                                                text.push(Number(tableModel.data(index, TableModel.AmountRole))/100);
                                             }
                                         );
 
@@ -368,12 +365,13 @@ ApplicationWindow {
                             }
 
                             headerDelegate: Rectangle {
-                                height: tableHeader.height
+                                id: tableHeader
+                                height: tableHeaderText.height*1.2
                                 color: "#dcdcdc"
+
                                 Text {
-                                    id: tableHeader
+                                    id: tableHeaderText
                                     text: styleData.value
-                                    color: "#545454"
                                 }
                             }
                             rowDelegate: Rectangle {
@@ -384,7 +382,7 @@ ApplicationWindow {
                             itemDelegate: Item {
                                 id: treeItem
                                 Text {
-                                    text: styleData.role !== "amount"? styleData.value : Number(styleData.value).toFixed(2)
+                                    text: styleData.role !== "amount"? styleData.value : Number(styleData.value)/100
                                     color: "black"
                                 }
                             }
@@ -573,7 +571,7 @@ ApplicationWindow {
                                             tableModel.touchData(row, inputs[1], "id");
                                             tableModel.touchData(row, inputs[2].charCodeAt(0), "gender");
                                             tableModel.touchData(row, Number(inputs[3]), "age");
-                                            tableModel.touchData(row, Number(inputs[4]), "amount");
+                                            tableModel.touchData(row, Number(inputs[4])*100, "amount");
 
                                             donorsTable.positionViewAtRow(row, ListView.Contain);
                                         }
@@ -937,13 +935,94 @@ ApplicationWindow {
 
     }
 
+    Popup {
+            background: Rectangle {
+                color: "#ffffff"
+                border.width: 0
+
+             }
+
+            id: sortTablePopup
+
+            x: parent.width*0.3
+            y: parent.height*0.05
+            width: parent.width*0.6
+            height: parent.height*0.95
+            modal: true
+            focus: true
+            padding: width*0.04
+
+            closePolicy: Popup.CloseOnEscape | Popup.CloseOnPressOutside
+
+            Column {
+                id: sortTablePopupLayout
+                anchors.fill: parent
+                Repeater {
+                    id: sortTablePopupLayoutRepeater
+                    model: [
+                        qsTr("name"),
+                        qsTr("id"),
+                        qsTr("gender"),
+                        qsTr("age"),
+                        qsTr("amount")
+                    ]
+
+                    Button {
+                        cursorShape: Qt.PointingHandCursor
+                        Material.background: "#ffffff"
+                        contentItem: Rectangle {
+                            color: Qt.rgba(0,0,0,0)
+                            anchors.fill: parent
+                            Text {
+                                anchors.centerIn: parent
+                                font.pointSize: 24
+                                text: modelData
+                                color: "#696969"
+                            }
+                        }
+
+                        width: sortTablePopupLayout.width
+                        height: sortTablePopupLayout.height/6
+                        onClicked: {
+                            if (tableModel.count !== 0)
+                                tableModel.sort_table(modelData, !sortSwitch.on);
+                            sortTablePopup.close();
+                        }
+                    }
+                }
+                Button {
+                    id: sortSwitch
+                    property bool on: false
+                    contentItem: Rectangle {
+                        color: Qt.rgba(0,0,0,0)
+                        anchors.fill: parent
+                        Text {
+                            anchors.centerIn: parent
+                            font.pointSize: 24
+                            text: sortSwitch.on ? qsTr("descend") + "\u2798" : qsTr("ascend") + "\u279A"
+                            color: "#696969"
+                        }
+                    }
+                    width: sortTablePopupLayout.width
+                    height: sortTablePopupLayout.height/6
+                    cursorShape: Qt.PointingHandCursor
+
+                    onClicked: {
+                        sortSwitch.on = !sortSwitch.on;
+                    }
+                }
+            }
+
+    }
+
     footer: Row {
+        clip: true
         id: statusBar
         width: parent.width
 
         Rectangle {
             color: "#4f4f4f"
-            height: status.height*1.25
+            height: status.height*1.5
             width: parent.width
             Text {
                 id: status
@@ -951,6 +1030,18 @@ ApplicationWindow {
                 color: "grey"
                 font.pointSize: 10
                 anchors.verticalCenter: parent.verticalCenter
+            }
+            Button {
+                Material.background: "#4f4f4f"
+                Material.elevation: 0
+                cursorShape: Qt.PointingHandCursor
+                anchors.right: parent.right
+                anchors.verticalCenter: parent.verticalCenter
+                text: "sort"
+                font.pointSize: 12
+                onClicked: {
+                    sortTablePopup.open();
+                }
             }
         }
     }

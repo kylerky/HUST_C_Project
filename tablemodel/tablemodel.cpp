@@ -42,7 +42,7 @@ QVariant TableModel::data(const QModelIndex &index, int role) const {
         case AgeRole:
             return QVariant(data->age);
         case AmountRole:
-            return QVariant(data->amount);
+            return QVariant(static_cast<qulonglong>(data->amount));
     }
 
     return QVariant();
@@ -71,7 +71,6 @@ Qt::ItemFlags TableModel::flags(const QModelIndex &index) const {
 void TableModel::setList(QVariant val) {
     List *plist = val.value<List *>();
 
-    if (!plist) return;
     emit beginResetModel();
     m_list = plist;
     emit endResetModel();
@@ -153,6 +152,111 @@ QModelIndex TableModel::index(int row, int column,
 QModelIndex TableModel::parent(const QModelIndex &child) const {
     Q_UNUSED(child);
     return QModelIndex();
+}
+
+static inline int name_less(void *left, void *right) {
+    Donor *lhs = reinterpret_cast<Donor*>(left);
+    Donor *rhs = reinterpret_cast<Donor*>(right);
+
+    return std::strcmp(lhs->name, rhs->name) < 0;
+}
+static inline int name_more(void *left, void *right) {
+    Donor *lhs = reinterpret_cast<Donor*>(left);
+    Donor *rhs = reinterpret_cast<Donor*>(right);
+
+    return std::strcmp(lhs->name, rhs->name) > 0;
+}
+
+static inline int id_less(void *left, void *right) {
+    Donor *lhs = reinterpret_cast<Donor*>(left);
+    Donor *rhs = reinterpret_cast<Donor*>(right);
+
+    return std::strcmp(lhs->id, rhs->id) < 0;
+}
+static inline int id_more(void *left, void *right) {
+    Donor *lhs = reinterpret_cast<Donor*>(left);
+    Donor *rhs = reinterpret_cast<Donor*>(right);
+
+    return std::strcmp(lhs->id, rhs->id) > 0;
+}
+
+static inline int sex_less(void *left, void *right) {
+    Donor *lhs = reinterpret_cast<Donor*>(left);
+    Donor *rhs = reinterpret_cast<Donor*>(right);
+
+    return lhs->sex < rhs->sex;
+}
+static inline int sex_more(void *left, void *right) {
+    Donor *lhs = reinterpret_cast<Donor*>(left);
+    Donor *rhs = reinterpret_cast<Donor*>(right);
+
+    return lhs->sex > rhs->sex;
+}
+
+static inline int age_less(void *left, void *right) {
+    Donor *lhs = reinterpret_cast<Donor*>(left);
+    Donor *rhs = reinterpret_cast<Donor*>(right);
+
+    return lhs->age < rhs->age;
+}
+static inline int age_more(void *left, void *right) {
+    Donor *lhs = reinterpret_cast<Donor*>(left);
+    Donor *rhs = reinterpret_cast<Donor*>(right);
+
+    return lhs->age > rhs->age;
+}
+
+static inline int amount_less(void *left, void *right) {
+    Donor *lhs = reinterpret_cast<Donor*>(left);
+    Donor *rhs = reinterpret_cast<Donor*>(right);
+
+    return lhs->amount < rhs->amount;
+}
+static inline int amount_more(void *left, void *right) {
+    Donor *lhs = reinterpret_cast<Donor*>(left);
+    Donor *rhs = reinterpret_cast<Donor*>(right);
+
+    return lhs->amount > rhs->amount;
+}
+
+void TableModel::sort_table(const QString &role, bool ascend) {
+    emit beginResetModel();
+    switch (m_roleIndex[role]) {
+        case NameRole:
+            if (ascend)
+                sort_list(*m_list, name_less);
+            else
+                sort_list(*m_list, name_more);
+            break;
+        case IdRole:
+            if (ascend)
+                sort_list(*m_list, id_less);
+            else
+                sort_list(*m_list, id_more);
+            break;
+        case GenderRole:
+            if (ascend)
+                sort_list(*m_list, sex_less);
+            else
+                sort_list(*m_list, sex_more);
+            break;
+        case AgeRole:
+            if (ascend)
+                sort_list(*m_list, age_less);
+            else
+                sort_list(*m_list, age_more);
+            break;
+        case AmountRole:
+            if (ascend)
+                sort_list(*m_list, amount_less);
+            else
+                sort_list(*m_list, amount_more);
+            break;
+        default:
+            break;
+    }
+
+    emit endResetModel();
 }
 
 QHash<int, QByteArray> TableModel::roleNames() const { return m_roleNames; }

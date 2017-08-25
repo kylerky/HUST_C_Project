@@ -340,8 +340,8 @@ bool TreeModel::writeItem(const QModelIndex &index) {
             return false;
         }
 
-
-        if (std::fwrite(&donor->amount, sizeof(donor->amount), 1, fp) != 1) {
+        uint32_t amount = donor->amount;
+        if (std::fwrite(&amount, sizeof(amount), 1, fp) != 1) {
             std::cerr << "cannot write all the data to disk" << std::endl;
             std::fclose(fp);
             return false;
@@ -532,7 +532,7 @@ bool TreeModel::readAll() {
                 donor.sex = data_donor[31];
 
                 int16_t age;
-                float amount;
+                uint32_t amount;
                 std::memcpy(&age, data_donor+32, sizeof(age));
                 std::memcpy(&amount, data_donor+34, sizeof(amount));
 
