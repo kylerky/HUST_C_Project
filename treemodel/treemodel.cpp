@@ -105,7 +105,7 @@ QModelIndex TreeModel::parent(const QModelIndex &index) const {
 
     TreeItem *childItem = getItem(index);
     TreeItem *parentItem = childItem->parent();
-    if (childItem == m_rootItem || m_validPtrs.count(parentItem) != 1)
+    if (parentItem == m_rootItem || m_validPtrs.count(parentItem) != 1)
         return QModelIndex();
     return createIndex(parentItem->childNumber(), 0, parentItem);
 }
@@ -264,13 +264,12 @@ bool TreeModel::removeRows(int position, int rows, const QModelIndex &parent) {
     return success;
 }
 bool TreeModel::removeRow(int position, const QModelIndex &parent) {
-    if (!parent.isValid()) return false;
     TreeItem *parentItem = getItem(parent);
     TreeItem *ptr = parentItem;
 
-    QModelIndex parentIndex;
-    if (parentItem != m_rootItem) parentIndex = parent;
-    emit beginRemoveRows(parentIndex, position, position);
+    if (!parent.isValid()) parentItem = m_rootItem;
+
+    emit beginRemoveRows(parent, position, position);
     ptr = parentItem->removeChild(position);
     m_validPtrs.erase(ptr);
     emit endRemoveRows();
