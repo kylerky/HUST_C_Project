@@ -17,7 +17,6 @@ TreeItem::TreeItem(Iter_list &iter, TreeItem *parent, int type)
     : m_iter(iter), m_parentItem(parent), m_typeIndex(type) {}
 
 TreeItem::~TreeItem() {
-    qDeleteAll(m_childItems);
 }
 
 TreeItem *TreeItem::child(int row) { return m_childItems.value(row); }
@@ -43,9 +42,13 @@ ClassTreeItem::ClassTreeItem(Iter_list &iter, TreeItem *parent)
 
 ClassTreeItem::~ClassTreeItem() {
     delete_list(reinterpret_cast<struct Classes *>(m_iter->data)->donors);
-    erase_list(
-        reinterpret_cast<struct School *>(m_parentItem->m_iter->data)->classes,
-        m_iter);
+    if (!m_deleteMode) {
+        delete reinterpret_cast<struct Classes *>(m_iter->data);
+        delete m_iter;
+    }
+//    erase_list(
+//        reinterpret_cast<struct School *>(m_parentItem->m_iter->data)->classes,
+//        m_iter);
 }
 
 void *ClassTreeItem::data() const { return m_iter->data; }
@@ -55,7 +58,11 @@ TreeItem *ClassTreeItem::insertChild(int position, void *data) {
     Q_UNUSED(data);
     return nullptr;
 }
-
+TreeItem *ClassTreeItem::removeChild(int position) {
+    auto ptr = m_childItems.takeAt(position);
+    delete ptr;
+    return ptr;
+}
 bool ClassTreeItem::setData(void *value) {
     memcpy(m_iter->data, value, sizeof(struct Classes));
     return true;
@@ -66,10 +73,15 @@ bool ClassTreeItem::setData(void *value) {
 SchoolTreeItem::SchoolTreeItem(Iter_list &iter, TreeItem *parent)
     : TreeItem(iter, parent, 2) {}
 SchoolTreeItem::~SchoolTreeItem() {
+    qDeleteAll(m_childItems);
     delete reinterpret_cast<struct School *>(m_iter->data)->classes.head;
-    erase_list(
-        reinterpret_cast<struct School *>(m_parentItem->m_iter->data)->classes,
-        m_iter);
+    if (!m_deleteMode) {
+        delete reinterpret_cast<struct School *>(m_iter->data);
+        delete m_iter;
+    }
+//    erase_list(
+//        reinterpret_cast<struct School *>(m_parentItem->m_iter->data)->classes,
+//        m_iter);
 }
 
 void *SchoolTreeItem::data() const { return m_iter->data; }
@@ -91,7 +103,16 @@ TreeItem *SchoolTreeItem::insertChild(int position, void *data) {
 
     return item;
 }
-
+TreeItem *SchoolTreeItem::removeChild(int position) {
+    auto ptr = m_childItems.takeAt(position);
+    auto class_ptr = dynamic_cast<struct ClassTreeItem*>(ptr);
+    class_ptr->deleteMode();
+    delete ptr;
+    List *list = &reinterpret_cast<struct School*>(m_iter->data)->classes;
+    Iter_list pos = seek_list(*list, position);
+    erase_list(*list, pos);
+    return ptr;
+}
 bool SchoolTreeItem::setData(void *value) {
     memcpy(m_iter->data, value, sizeof(struct School));
     return true;
@@ -106,6 +127,7 @@ RootTreeItem::RootTreeItem(TreeItem *parent) : TreeItem(parent) {
     m_iter->data = p;
 }
 RootTreeItem::~RootTreeItem() {
+    qDeleteAll(m_childItems);
     delete reinterpret_cast<struct School *>(m_iter->data)->classes.head;
     delete reinterpret_cast<struct School *>(m_iter->data);
     delete m_iter;
@@ -131,7 +153,16 @@ TreeItem *RootTreeItem::insertChild(int position, void *data) {
 
     return item;
 }
-
+TreeItem *RootTreeItem::removeChild(int position) {
+    auto ptr = m_childItems.takeAt(position);
+    auto school_ptr = dynamic_cast<struct SchoolTreeItem*>(ptr);
+    school_ptr->deleteMode();
+    delete ptr;
+    List *list = &reinterpret_cast<struct School*>(m_iter->data)->classes;
+    Iter_list pos = seek_list(*list, position);
+    erase_list(*list, pos);
+    return ptr;
+}
 bool RootTreeItem::setData(void *listp) {
     Q_UNUSED(listp);
     return false;

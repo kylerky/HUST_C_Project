@@ -202,9 +202,9 @@ Iter_list erase_seq_list_p(List *list, Iter_list beg, Iter_list end) {
     return beg;
 }
 
-void splice_list_p(List *this, Iter_list pos, List *other) {
+void splice_list_p(List *first, Iter_list pos, List *other) {
     // get the self pointer
-    Iter_list *self_p = this->last;
+    Iter_list *self_p = first->last;
     if (pos) self_p = pos->self_p;
 
     // change the pointers
@@ -215,9 +215,9 @@ void splice_list_p(List *this, Iter_list pos, List *other) {
     if (pos)
         pos->self_p = other->last;
     else
-        this->last = other->last;
+        first->last = other->last;
 
-    this->size += other->size;
+    first->size += other->size;
 
     // free the head node
     free(other->head);
@@ -268,4 +268,9 @@ void sort_list_p(List *list, int (*comp)(void *, void *)) {
             left = right;
         }
     }
+}
+Iter_list seek_list_p(List *list, size_t index) {
+    Iter_list iter = first_list(*list);
+    for (size_t i = 0; i != index; ++i) next_list(iter);
+    return iter;
 }

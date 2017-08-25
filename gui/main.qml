@@ -124,11 +124,12 @@ ApplicationWindow {
                                 color: "#616161"
                             }
                             onClicked: {
-                                if (leftSideView.currentIndex.row === 0
-                                        && treeModel.type(leftSideView.currentIndex) === 2)
+                                var index = leftSideView.currentIndex;
+                                if (index.row === 0
+                                        && treeModel.type(index) === 2)
                                     return;
 
-                                treeModel.removeRow(leftSideView.currentIndex.row);
+                                treeModel.removeRow(index.row, treeModel.parent(index));
                             }
                         }
 
@@ -144,8 +145,7 @@ ApplicationWindow {
                             }
 
                             onClicked: {
-                                console.log(leftSideView.currentIndex);
-                                if (leftSideView.currentIndex === treeModel.index(0,0) || leftSideView.currentIndex === treeModel.parent(treeModel.index(0,0))) {
+                                if (leftSideView.currentIndex === treeModel.index(0,0) || leftSideView.currentIndex.row < 0) {
                                     treeSchoolPopup.isAdd = true;
                                     treeSchoolPopup.open();
                                     return;
@@ -566,7 +566,7 @@ ApplicationWindow {
                                                 );
                                             } else {
                                                 tableModel.insert(tableModel.count);
-                                                row = talbeModel.count-1;
+                                                row = tableModel.count-1;
                                             }
 
                                             tableModel.touchData(row, inputs[0], "name");

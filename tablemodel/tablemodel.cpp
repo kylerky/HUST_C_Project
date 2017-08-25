@@ -8,12 +8,6 @@ extern "C" {
 
 namespace HUST_C {
 
-static inline Iter_list seek(List list, size_t index) {
-    Iter_list iter = first_list(list);
-    for (size_t i = 0; i != index; ++i) next_list(iter);
-    return iter;
-}
-
 TableModel::TableModel(QObject *parent)
     : QAbstractItemModel(parent), m_list(nullptr) {
     m_roleNames[NameRole] = "name";
@@ -35,7 +29,7 @@ QVariant TableModel::data(const QModelIndex &index, int role) const {
     int row = index.row();
     if (!m_list || row < 0 || row >= m_list->size) return QVariant();
 
-    Iter_list iter = seek(*m_list, row);
+    Iter_list iter = seek_list(*m_list, row);
     struct Donor *data = reinterpret_cast<struct Donor *>(iter->data);
 
     switch (role) {
@@ -86,7 +80,7 @@ void TableModel::setList(QVariant val) {
 bool TableModel::insert(int position) {
     if (!m_list || position < 0 || position > m_list->size) return false;
 
-    Iter_list iter = seek(*m_list, position);
+    Iter_list iter = seek_list(*m_list, position);
 
     struct Donor donor;
     std::memset(&donor, 0, sizeof(donor));
@@ -100,7 +94,7 @@ bool TableModel::touchData(int position, const QVariant &value,
                            const QString &role) {
     if (!m_list) return false;
 
-    Iter_list iter = seek(*m_list, position);
+    Iter_list iter = seek_list(*m_list, position);
 
     struct Donor *data = reinterpret_cast<struct Donor *>(iter->data);
 
@@ -135,7 +129,7 @@ bool TableModel::append() { return insert(m_list->size); }
 
 bool TableModel::remove(int index) {
     if (!m_list || index < 0 || index >= m_list->size) return false;
-    Iter_list iter = seek(*m_list, index);
+    Iter_list iter = seek_list(*m_list, index);
     emit beginRemoveRows(QModelIndex(), index, index);
     erase_list(*m_list, iter);
     emit endRemoveRows();

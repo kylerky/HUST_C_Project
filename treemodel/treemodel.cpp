@@ -105,7 +105,7 @@ QModelIndex TreeModel::parent(const QModelIndex &index) const {
 
     TreeItem *childItem = getItem(index);
     TreeItem *parentItem = childItem->parent();
-    if (parentItem == m_rootItem || m_validPtrs.count(parentItem) != 1)
+    if (childItem == m_rootItem || m_validPtrs.count(parentItem) != 1)
         return QModelIndex();
     return createIndex(parentItem->childNumber(), 0, parentItem);
 }
@@ -268,7 +268,9 @@ bool TreeModel::removeRow(int position, const QModelIndex &parent) {
     TreeItem *parentItem = getItem(parent);
     TreeItem *ptr = parentItem;
 
-    emit beginRemoveRows(parent, position, position);
+    QModelIndex parentIndex;
+    if (parentItem != m_rootItem) parentIndex = parent;
+    emit beginRemoveRows(parentIndex, position, position);
     ptr = parentItem->removeChild(position);
     m_validPtrs.erase(ptr);
     emit endRemoveRows();
@@ -282,6 +284,7 @@ bool TreeModel::writeItem(const QModelIndex &index) {
     TreeItem *item = static_cast<TreeItem *>(index.internalPointer());
     if (!item) return false;
 
+    if (m_validPtrs.count(item) != 1) return false;
     if (typeid(*item) != typeid(ClassTreeItem)) return false;
 
     ClassTreeItem *classItem = dynamic_cast<ClassTreeItem*>(item);
@@ -569,7 +572,9 @@ TreeItem *TreeModel::getItem(const QModelIndex &index) const {
 QHash<int, QByteArray> TreeModel::roleNames() const { return m_roleNames; }
 
 int TreeModel::type(const QModelIndex &index) const {
-    return reinterpret_cast<TreeItem *>(index.internalPointer())->typeIndex();
+    TreeItem *item = reinterpret_cast<TreeItem *>(index.internalPointer());
+    if (m_validPtrs.count(item) != 1) return -1;
+    return item->typeIndex();
 }
 
 }  // namespace HUST_C

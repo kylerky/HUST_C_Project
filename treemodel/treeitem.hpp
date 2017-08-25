@@ -27,7 +27,7 @@ class TreeItem {
     int childNumber() const;
     virtual bool setData(void *value) = 0;
 
-    TreeItem *removeChild(int position);
+    virtual TreeItem *removeChild(int position);
 
     TreeItem *parent() { return m_parentItem; }
     int typeIndex() const { return m_typeIndex; }
@@ -57,8 +57,11 @@ class ClassTreeItem : public TreeItem {
     void *data() const override;
 
     TreeItem *insertChild(int position, void *data) override;
-
+    TreeItem *removeChild(int position) override;
     bool setData(void *value) override;
+    void deleteMode() {m_deleteMode = true;}
+private:
+    bool m_deleteMode = false;
 };
 
 // class SchoolTreeItem
@@ -71,8 +74,11 @@ class SchoolTreeItem : public TreeItem {
     void *data() const override;
 
     TreeItem *insertChild(int position, void *data) override;
-
+    TreeItem *removeChild(int position) override;
     bool setData(void *value) override;
+    void deleteMode() {m_deleteMode = true;}
+private:
+    bool m_deleteMode = false;
 };
 
 // class RootTreeItem
@@ -85,7 +91,7 @@ class RootTreeItem : public TreeItem {
     void *data() const override;
 
     TreeItem *insertChild(int position, void *data) override;
-
+    TreeItem *removeChild(int position) override;
     virtual bool setData(void *listp) override;
 };
 

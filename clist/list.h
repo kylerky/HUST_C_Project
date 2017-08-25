@@ -318,4 +318,8 @@ void splice_list_p(List *th, Iter_list pos, List *other);
 */
 void sort_list_p(List *list, int (*comp)(void *, void *));
 
+#define seek_list(list, pos) seek_list_p(&list, pos)
+
+Iter_list seek_list_p(List *list, size_t pos);
+
 #endif  // LIST_H
