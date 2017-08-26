@@ -79,6 +79,13 @@ QVariant TreeModel::getDonors(const QModelIndex &index) const {
     return val;
 }
 
+QVariant TreeModel::getList() const {
+    QVariant val;
+    val.setValue(&reinterpret_cast<struct School *>(m_rootItem->data())->classes);
+
+    return val;
+}
+
 QVariant TreeModel::headerData(int section, Qt::Orientation oreientation,
                                int role) const {
     return QVariant();

@@ -71,7 +71,7 @@ ApplicationWindow {
                 }
 
                 Repeater {
-                    model: [qsTr("Edit"), qsTr("Analyze"), qsTr("Graph")]
+                    model: [qsTr("Edit"), qsTr("Analyze"), qsTr("Graph"), qsTr("Search")]
 
                     Button {
                         cursorShape: Qt.PointingHandCursor
@@ -391,7 +391,7 @@ ApplicationWindow {
                         Rectangle {
                             id: editArea
                             color: "#e1e2e1"
-                            height: parent.height*0.2
+                            height: Math.min(parent.height*0.2, screen.height*0.15)
                             states: [
                                 State {
                                     name: "edit"
@@ -611,6 +611,213 @@ ApplicationWindow {
                         color: "red"
                     }
 
+                    Rectangle {
+                        color: "blue"
+                    }
+                    Rectangle {
+                        Material.foreground: "#6e6e6e"
+                        color: Qt.rgba(0,0,0,0)
+                        IndexMap {
+                            id: indices
+                        }
+
+                        Rectangle {
+                            color: Qt.rgba(0,0,0,0)
+                            id: searchArea
+                            width: parent.width
+                            height: searchBox.height
+
+                            TextField {
+                                anchors.left: parent.left
+                                anchors.leftMargin: parent.width*0.05
+                                id: searchBox
+                                width: parent.width*0.7
+                                font.pointSize: 24
+                            }
+                            Button {
+                                anchors.left: searchBox.right
+                                anchors.leftMargin: parent.width*0.05
+                                cursorShape: Qt.PointingHandCursor
+                                    text: "search"
+                                    font.pointSize: 24
+
+                            }
+                        }
+
+                        Row {
+                            id: searchModeRow
+                            Material.foreground: "#6e6e6e"
+                            anchors.top: searchArea.bottom
+                            anchors.topMargin: searchBox.height*0.5
+                            spacing: textSearchModeBtn.width*0.2
+                            anchors.left: parent.left
+                            anchors.leftMargin: parent.width*0.1
+
+                            ButtonGroup {
+                                id: searchModeGroup
+                                onClicked: {
+                                    checkedButton = button;
+                                }
+                            }
+
+                            Button {
+                                id: textSearchModeBtn
+                                checked: true
+                                text: qsTr("Text")
+                                cursorShape: Qt.PointingHandCursor
+                                ButtonGroup.group: searchModeGroup
+                                font.pointSize: 16
+                            }
+                            Rectangle{
+                                color: Qt.rgba(0,0,0,0)
+                                height: parent.height
+                                width: textSearchModeBtn.width*0.05
+                            }
+
+                            Repeater {
+                                model: [qsTr("Age"), qsTr("Amount")]
+                                BinaryButton {
+                                    text: modelData + (descend <= 0?"\u279A":"\u2798")
+                                    cursorShape: Qt.PointingHandCursor
+                                    ButtonGroup.group: searchModeGroup
+                                    font.pointSize: 16
+                                }
+                            }
+                            Button {
+                                TextMetrics {
+                                    text: "GENDER:MM"
+                                    id: genderSearchModeText
+                                    font.pointSize: 16
+                                }
+
+                                width: genderSearchModeText.width
+                                checked: true
+                                text: qsTr("Gender") + suffix
+                                cursorShape: Qt.PointingHandCursor
+                                ButtonGroup.group: searchModeGroup
+                                font.pointSize: 16
+                                property int typeId: -1
+                                property string suffix: ""
+                                onCheckedChanged: {
+                                    if (!checked) {
+                                        typeId = -1;
+                                        suffix = "";
+                                    }
+                                }
+
+                                onClicked: {
+                                    var suffixes = ["f","m","x"]
+                                    typeId = (typeId+1)%3;
+                                    suffix = ":" + suffixes[typeId];
+                                }
+                            }
+                            Rectangle{
+                                color: Qt.rgba(0,0,0,0)
+                                height: parent.height
+                                width: textSearchModeBtn.width*0.05
+                            }
+
+
+                            Repeater {
+                                 model: [qsTr("Student Number"), qsTr("Grade")]
+                                 BinaryButton {
+                                     text: modelData + (descend <= 0?"\u279A":"\u2798")
+                                     cursorShape: Qt.PointingHandCursor
+                                     ButtonGroup.group: searchModeGroup
+                                     font.pointSize: 16
+                                 }
+                            }
+                        }
+
+                        Column {
+                            anchors.top: searchModeRow.bottom
+                            anchors.topMargin: searchBox.height*0.5
+                            width: parent.width*0.8
+                            height: parent.height-searchBox.height*1.5-searchModeRow.height
+                            anchors.leftMargin: parent.width*0.1
+                            anchors.left: parent.left
+                            TabBar {
+                                id: searchResultBar
+                                width: parent.width
+                                Repeater {
+                                    model: [
+                                        qsTr("All"),
+                                        qsTr("School"),
+                                        qsTr("Class"),
+                                        qsTr("Donor")
+                                    ]
+                                    TabButton {
+                                        text: modelData
+                                    }
+                                }
+
+                            }
+
+                            StackLayout {
+                                width: parent.width
+                                height: parent.height-searchResultBar.height-statusBar.height*1.2
+                                currentIndex: searchResultBar.currentIndex
+                                Rectangle {
+                                    anchors.fill: parent
+                                    color: Qt.rgba(0,0,0,0)
+                                    Flickable {
+                                        clip: true
+                                        anchors.top: parent.top
+                                        anchors.topMargin: searchResultBar.height*0.3
+                                        anchors.fill: parent
+                                        contentWidth: parent.width
+                                        contentHeight: searchResultBox.height
+                                        ScrollBar.vertical: ScrollBar{}
+
+                                        Component.onCompleted: {
+                                            console.log("flickable height", height);
+                                            console.log("flickable contentHeight", contentHeight);
+                                        }
+
+                                        Column {
+                                            id: searchResultBox
+                                            width: parent.width
+                                            ClassResultTab {
+                                                width: parent.width
+                                                height: searchResultBar.height*2.4
+
+                                                schoolText.text: "computer&science"
+                                                instructorText.text: "asdf"
+                                                numberText.text: "U231212"
+                                                gradeText.text: "3"
+                                                cntText.text: "23"
+                                            }
+
+                                            DonorResultTab {
+                                                width: parent.width
+                                                height: searchResultBar.height*2.4
+
+                                                nameText.text: "penguin"
+                                                idText.text: "U293929"
+                                                genderText.text: "f"
+                                                ageText.text: "12"
+                                                amountText.text: "212"
+                                            }
+
+                                            Repeater {
+                                                model: 10
+                                                SchoolResultTab {
+                                                    width: parent.width
+                                                    height: searchResultBar.height*1.4
+                                                    nameText.text: "computer&science"
+                                                    principalText.text: "adfsafs"
+                                                    teleText.text: "123123"
+                                                }
+                                            }
+
+                                        }
+
+                                    }
+                                }
+                            }
+                        }
+
+                    }
                 }
             }
 

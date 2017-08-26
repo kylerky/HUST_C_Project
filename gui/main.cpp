@@ -9,6 +9,7 @@
 #include "treeitem.hpp"
 #include "treemodel.hpp"
 #include "launcherrmsg.hpp"
+#include "indexmap.hpp"
 
 inline static QObject *launch_err_singletontype_provider(QQmlEngine *engine, QJSEngine *scriptEngine) {
     Q_UNUSED(engine);
@@ -24,6 +25,7 @@ int main(int argc, char *argv[]) {
 
     qmlRegisterType<HUST_C::TreeModel>("hust.kyle", 1, 0, "TreeModel");
     qmlRegisterType<HUST_C::TableModel>("hust.kyle", 1, 0, "TableModel");
+    qmlRegisterType<HUST_C::IndexMap>("hust.kyle", 1, 0, "IndexMap");
 
     QQmlApplicationEngine engine;
 

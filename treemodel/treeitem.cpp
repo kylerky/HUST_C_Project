@@ -133,7 +133,7 @@ RootTreeItem::~RootTreeItem() {
     delete m_iter;
 }
 
-void *RootTreeItem::data() const { return nullptr; }
+void *RootTreeItem::data() const { return m_iter->data; }
 
 TreeItem *RootTreeItem::insertChild(int position, void *data) {
     if (position < 0 || position > m_childItems.size()) return nullptr;

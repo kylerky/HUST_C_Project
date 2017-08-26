@@ -56,6 +56,7 @@ class TreeModel : public QAbstractItemModel {
 
    public slots:
     QVariant getDonors(const QModelIndex &index) const;
+    QVariant getList() const;
 
     QModelIndex index(int row, int column,
                       const QModelIndex &parent = QModelIndex()) const override;
@@ -81,7 +82,8 @@ class TreeModel : public QAbstractItemModel {
     bool writeItem(const QModelIndex &index);
     bool writeTree();
     bool readAll();
-   protected:
+
+  protected:
     bool insertSchoolRows(int position, int rows, const QModelIndex &parent);
 
     bool insertClassRows(int position, int rows, const QModelIndex &parent);
