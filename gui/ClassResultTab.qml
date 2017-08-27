@@ -1,11 +1,13 @@
 import QtQuick 2.7
-
+import QtQml.Models 2.3
 Button {
     property alias schoolText: schoolText
     property alias instructorText: instructorText
     property alias numberText: numberText
     property alias gradeText: gradeText
     property alias cntText: studentCntText
+    property int schoolIndex: 0
+    property int classIndex: 0
     contentItem: Rectangle {
         clip: true
         color: Qt.rgba(0,0,0,0)
@@ -76,4 +78,11 @@ Button {
         }
     }
     cursorShape: Qt.PointingHandCursor
+    onClicked: {
+        var school = treeModel.index(schoolIndex, 0);
+        var classElem = treeModel.index(classIndex, 0, school);
+
+        leftSideViewSelection.setCurrentIndex(classElem, ItemSelectionModel.ClearAndSelect);
+        leftSideView.expand(school);
+    }
 }

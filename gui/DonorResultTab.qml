@@ -1,4 +1,5 @@
 import QtQuick 2.7
+import QtQml.Models 2.3
 
 Button {
     property alias nameText: nameText
@@ -6,6 +7,9 @@ Button {
     property alias genderText: genderText
     property alias ageText: ageText
     property alias amountText: amountText
+    property int schoolIndex: 0
+    property int classIndex: 0
+    property int donorIndex: 0
     contentItem: Rectangle {
         clip: true
         color: Qt.rgba(0,0,0,0)
@@ -76,4 +80,15 @@ Button {
         }
     }
     cursorShape: Qt.PointingHandCursor
+    onClicked: {
+        var school = treeModel.index(schoolIndex, 0);
+        var classElem = treeModel.index(classIndex, 0, school);
+
+        leftSideView.expand(school);
+        leftSideViewSelection.setCurrentIndex(classElem, ItemSelectionModel.ClearAndSelect);
+
+        donorsTable.selection.clear();
+        donorsTable.selection.select(donorIndex);
+        modesBtnWrapper.children[0].clicked();
+    }
 }

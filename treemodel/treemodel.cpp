@@ -254,14 +254,6 @@ bool TreeModel::insertClassRows(int position, int rows,
     return ptr != nullptr;
 }
 
-void TreeModel::setLastIndex(const QModelIndex &index) {
-    m_lastIndex = index;
-}
-
-QModelIndex TreeModel::getLastIndex() const {
-    return m_lastIndex;
-}
-
 bool TreeModel::removeRows(int position, int rows, const QModelIndex &parent) {
     bool success = true;
 
@@ -457,7 +449,6 @@ bool TreeModel::readAll() {
     // read the tree
     FILE *tree_fp = fopen("tree.bin", "rb");
     if (!tree_fp) {
-        std::cerr << "cannot open file \"tree.bin\"" << std::endl;
         return false;
     }
 

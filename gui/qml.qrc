@@ -4,9 +4,10 @@
         <file>Button.qml</file>
         <file>FormatInput.qml</file>
         <file>error.qml</file>
-        <file>BinaryButton.qml</file>
+        <file>TripleButton.qml</file>
         <file>SchoolResultTab.qml</file>
         <file>ClassResultTab.qml</file>
         <file>DonorResultTab.qml</file>
+        <file>createSearchResults.js</file>
     </qresource>
 </RCC>

@@ -75,10 +75,6 @@ class TreeModel : public QAbstractItemModel {
     bool removeRow(int position, const QModelIndex &parent = QModelIndex());
     int type(const QModelIndex &index) const;
 
-    void setLastIndex(const QModelIndex &index);
-    QModelIndex getLastIndex() const;
-
-
     bool writeItem(const QModelIndex &index);
     bool writeTree();
     bool readAll();
@@ -96,7 +92,6 @@ class TreeModel : public QAbstractItemModel {
 
     TreeItem *getItem(const QModelIndex &index) const;
     TreeItem *m_rootItem;
-    QModelIndex m_lastIndex;
 
     unsigned m_classCnt = 0;
     unsigned m_schoolCnt= 0;

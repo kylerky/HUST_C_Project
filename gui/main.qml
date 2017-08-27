@@ -5,6 +5,7 @@ import QtQuick.Controls 1.4
 import QtQuick.Controls 2.2
 import QtQuick.Controls.Material 2.2
 import QtQml.Models 2.3
+import "createSearchResults.js" as SearchResult
 import "."
 import hust.kyle 1.0
 
@@ -71,7 +72,7 @@ ApplicationWindow {
                 }
 
                 Repeater {
-                    model: [qsTr("Edit"), qsTr("Analyze"), qsTr("Graph"), qsTr("Search")]
+                    model: [qsTr("Edit"), qsTr("Analyze"), qsTr("Search")]
 
                     Button {
                         cursorShape: Qt.PointingHandCursor
@@ -172,17 +173,22 @@ ApplicationWindow {
                         TreeView {
                             id: leftSideView
                             anchors.fill: parent
-
-                            TreeModel {
-                                id: treeModel
+                            selection: ItemSelectionModel {
+                                id: leftSideViewSelection
+                                model: leftSideView.model
+                                onCurrentIndexChanged: {
+                                    var list = treeModel.getDonors(current);
+                                    tableModel.setList(list);
+                                    treeModel.writeItem(previous);
+                                }
                             }
 
-                            onCurrentIndexChanged: {
-                                var last = treeModel.getLastIndex();
-                                treeModel.setLastIndex(leftSideView.currentIndex);
-                                var list = treeModel.getDonors(leftSideView.currentIndex);
-                                tableModel.setList(list);
-                                treeModel.writeItem(last);
+                            selectionMode: SelectionMode.SingleSelection
+                            TreeModel {
+                                id: treeModel
+                                onDataChanged: {
+                                    indices.needUpdate = true;
+                                }
                             }
 
                             Layout.fillHeight: true
@@ -273,7 +279,9 @@ ApplicationWindow {
                                     }
                                 }
 
-
+                                onClicked: {
+                                    leftSideViewSelection.setCurrentIndex(styleData.index, ItemSelectionModel.ClearAndSelect);
+                                }
 
                             }
                         }
@@ -285,12 +293,12 @@ ApplicationWindow {
                     Layout.fillHeight: true
                     Layout.preferredWidth: parent.width - Screen.width*0.1
 
-
                     id: mainFrame
 
                     currentIndex: modesBtnWrapper.currentIndex
 
                     Column {
+
                         anchors.fill: parent
 
                         TableView {
@@ -336,6 +344,9 @@ ApplicationWindow {
 
                             model: TableModel {
                                 id: tableModel
+                                onDataChanged: {
+                                    indices.needUpdate = true;
+                                }
                             }
 
                             TextMetrics {
@@ -377,10 +388,28 @@ ApplicationWindow {
                             rowDelegate: Rectangle {
                                 color: styleData.selected ? "#b3b3b3" :  styleData.alternate?"#f5f5f6":"#ffffff"
                                 height: tableTextMetrics.height
+                                MouseArea {
+                                    anchors.fill: parent
+                                    propagateComposedEvents: true
+                                    enabled: true
+                                    onClicked: mouse.accepted = false;
+                                    onPressed: {
+                                        if (styleData.row == undefined) {
+                                            donorsTable.selection.clear();
+                                        }
+                                        mouse.accepted = false;
+                                    }
+                                    onReleased: mouse.accepted = false;
+                                    onDoubleClicked: mouse.accepted = false;
+                                    onPositionChanged: mouse.accepted = false;
+                                    onPressAndHold: mouse.accepted = false;
+                                }
+
                             }
 
                             itemDelegate: Item {
                                 id: treeItem
+
                                 Text {
                                     text: styleData.role !== "amount"? styleData.value : Number(styleData.value)/100
                                     color: "black"
@@ -607,18 +636,21 @@ ApplicationWindow {
 
 
                     Rectangle {
-                        width: parent.width
+                        anchors.fill: parent
                         color: "red"
                     }
 
                     Rectangle {
-                        color: "blue"
-                    }
-                    Rectangle {
                         Material.foreground: "#6e6e6e"
                         color: Qt.rgba(0,0,0,0)
+                        id: searchFrame
                         IndexMap {
+                            property bool needUpdate: true
                             id: indices
+                        }
+
+                        onVisibleChanged: {
+                            updateIndices();
                         }
 
                         Rectangle {
@@ -627,7 +659,12 @@ ApplicationWindow {
                             width: parent.width
                             height: searchBox.height
 
+                            Component.onCompleted: {
+                                SearchResult.createComponents();
+                            }
+
                             TextField {
+                                Material.foreground: "#ffffff"
                                 anchors.left: parent.left
                                 anchors.leftMargin: parent.width*0.05
                                 id: searchBox
@@ -638,9 +675,113 @@ ApplicationWindow {
                                 anchors.left: searchBox.right
                                 anchors.leftMargin: parent.width*0.05
                                 cursorShape: Qt.PointingHandCursor
-                                    text: "search"
-                                    font.pointSize: 24
+                                text: "search"
+                                font.pointSize: 24
+                                onClicked: {
+                                    SearchResult.destroyAll();
 
+                                    var input = searchBox.text.replace(/(\s+$)|(^\s+)/g, "");
+                                    searchBox.text = input;
+                                    var results;
+                                    var checkedBtn = searchModeGroup.checkedButton;
+                                    if (checkedBtn.identifier === 0) {
+                                        results = indices.search(input);
+                                    } else if (checkedBtn.identifier >= 1 && checkedBtn.identifier <= 4) {
+                                        var directions = [0, 1, -1];
+                                        var field_enum = [0, IndexMap.Age, IndexMap.Amount, IndexMap.Count, IndexMap.Grade];
+                                        var value = Number(input);
+                                        if (checkedBtn.identifier === 2) value *= 100;
+
+                                        results = indices.find(value, field_enum[checkedBtn.identifier], directions[checkedBtn.typeId]);
+                                    } else if (checkedBtn.identifier === 5) {
+                                        var patterns = ['f', 'm', 'x']
+                                        results = indices.searchGender(patterns[checkedBtn.typeId].charCodeAt(0));
+                                    }
+
+                                    for (var i = 0; i !== results.length; ++i) {
+                                        if (Number(results[i].meta.schoolIndex) === 0) continue;
+                                        switch (results[i].meta.type) {
+                                        case IndexMap.DonorType:
+                                            SearchResult.createDonorResult(
+                                                                           searchAllResultBox,
+                                                                           searchAllResultBox.width,
+                                                                           searchResultBar.height*2.4,
+                                                                           results[i].name,
+                                                                           results[i].id,
+                                                                           results[i].gender,
+                                                                           results[i].age,
+                                                                           results[i].amount/100,
+                                                                           results[i].meta.schoolIndex,
+                                                                           results[i].meta.classIndex,
+                                                                           results[i].meta.donorIndex
+                                                                           );
+                                            SearchResult.createDonorResult(
+                                                                           searchDonorResultBox,
+                                                                           searchDonorResultBox.width,
+                                                                           searchResultBar.height*2.4,
+                                                                           results[i].name,
+                                                                           results[i].id,
+                                                                           results[i].gender,
+                                                                           results[i].age,
+                                                                           results[i].amount/100,
+                                                                           results[i].meta.schoolIndex,
+                                                                           results[i].meta.classIndex,
+                                                                           results[i].meta.donorIndex
+                                                                           );
+
+                                            break;
+                                        case IndexMap.ClassType:
+                                            SearchResult.createClassResult(
+                                                                           searchAllResultBox,
+                                                                           searchAllResultBox.width,
+                                                                           searchResultBar.height*2.4,
+                                                                           results[i].school,
+                                                                           results[i].instructor,
+                                                                           results[i].number,
+                                                                           results[i].grade,
+                                                                           results[i].count,
+                                                                           results[i].meta.schoolIndex,
+                                                                           results[i].meta.classIndex
+                                                                           );
+                                            SearchResult.createClassResult(
+                                                                           searchClassResultBox,
+                                                                           searchClassResultBox.width,
+                                                                           searchResultBar.height*2.4,
+                                                                           results[i].school,
+                                                                           results[i].instructor,
+                                                                           results[i].number,
+                                                                           results[i].grade,
+                                                                           results[i].count,
+                                                                           results[i].meta.schoolIndex,
+                                                                           results[i].meta.classIndex
+                                                                           );
+
+                                            break;
+                                        case IndexMap.SchoolType:
+                                            SearchResult.createSchoolResult(
+                                                                            searchAllResultBox,
+                                                                            searchAllResultBox.width,
+                                                                            searchResultBar.height*1.4,
+                                                                            results[i].name,
+                                                                            results[i].principal,
+                                                                            results[i].tele,
+                                                                            results[i].meta.schoolIndex
+                                                                           );
+                                            SearchResult.createSchoolResult(
+                                                                            searchSchoolResultBox,
+                                                                            searchSchoolResultBox.width,
+                                                                            searchResultBar.height*1.4,
+                                                                            results[i].name,
+                                                                            results[i].principal,
+                                                                            results[i].tele,
+                                                                            results[i].meta.schoolIndex
+                                                                           );
+                                            break;
+                                        default:
+                                            break;
+                                        }
+                                    }
+                                }
                             }
                         }
 
@@ -652,7 +793,12 @@ ApplicationWindow {
                             spacing: textSearchModeBtn.width*0.2
                             anchors.left: parent.left
                             anchors.leftMargin: parent.width*0.1
-
+                            move: Transition {
+                                NumberAnimation {
+                                    properties: "x, width"
+                                    easing.type: Easing.InOutQuad
+                                }
+                            }
                             ButtonGroup {
                                 id: searchModeGroup
                                 onClicked: {
@@ -664,6 +810,7 @@ ApplicationWindow {
                                 id: textSearchModeBtn
                                 checked: true
                                 text: qsTr("Text")
+                                property int identifier: 0
                                 cursorShape: Qt.PointingHandCursor
                                 ButtonGroup.group: searchModeGroup
                                 font.pointSize: 16
@@ -676,40 +823,63 @@ ApplicationWindow {
 
                             Repeater {
                                 model: [qsTr("Age"), qsTr("Amount")]
-                                BinaryButton {
-                                    text: modelData + (descend <= 0?"\u279A":"\u2798")
+                                TripleButton {
+                                    property int identifier: 1 + index
                                     cursorShape: Qt.PointingHandCursor
                                     ButtonGroup.group: searchModeGroup
                                     font.pointSize: 16
+                                    Component.onCompleted: {
+                                        text = Qt.binding(
+                                                    function() {
+                                                        var suffix;
+                                                        switch (typeId) {
+                                                        case 0:
+                                                            suffix = "=";
+                                                            break;
+                                                        case 1:
+                                                            suffix = "\u279A";
+                                                            break;
+                                                        case 2:
+                                                            suffix = "\u2798";
+                                                            break;
+                                                        default:
+                                                            suffix = "";
+                                                            break;
+                                                        }
+                                                        return modelData+suffix;
+                                                    }
+                                                   );
+                                    }
                                 }
                             }
-                            Button {
-                                TextMetrics {
-                                    text: "GENDER:MM"
-                                    id: genderSearchModeText
-                                    font.pointSize: 16
-                                }
-
-                                width: genderSearchModeText.width
-                                checked: true
+                            TripleButton {
+                                property int identifier: 5
                                 text: qsTr("Gender") + suffix
                                 cursorShape: Qt.PointingHandCursor
                                 ButtonGroup.group: searchModeGroup
                                 font.pointSize: 16
-                                property int typeId: -1
-                                property string suffix: ""
-                                onCheckedChanged: {
-                                    if (!checked) {
-                                        typeId = -1;
-                                        suffix = "";
+                                Component.onCompleted: {
+                                        text = Qt.binding(
+                                                    function() {
+                                                        var suffix;
+                                                        switch (typeId) {
+                                                        case 0:
+                                                            suffix = ": f";
+                                                            break;
+                                                        case 1:
+                                                            suffix = ": m";
+                                                            break;
+                                                        case 2:
+                                                            suffix = ": x";
+                                                            break;
+                                                        default:
+                                                            suffix = ""
+                                                            break;
+                                                        }
+                                                        return "Gender"+suffix;
+                                                    }
+                                                   );
                                     }
-                                }
-
-                                onClicked: {
-                                    var suffixes = ["f","m","x"]
-                                    typeId = (typeId+1)%3;
-                                    suffix = ":" + suffixes[typeId];
-                                }
                             }
                             Rectangle{
                                 color: Qt.rgba(0,0,0,0)
@@ -720,11 +890,33 @@ ApplicationWindow {
 
                             Repeater {
                                  model: [qsTr("Student Number"), qsTr("Grade")]
-                                 BinaryButton {
-                                     text: modelData + (descend <= 0?"\u279A":"\u2798")
+                                 TripleButton {
+                                     property int identifier: 3 + index
                                      cursorShape: Qt.PointingHandCursor
                                      ButtonGroup.group: searchModeGroup
                                      font.pointSize: 16
+                                     Component.onCompleted: {
+                                         text = Qt.binding(
+                                                     function() {
+                                                         var suffix;
+                                                         switch (typeId) {
+                                                         case 0:
+                                                             suffix = "=";
+                                                             break;
+                                                         case 1:
+                                                             suffix = "\u279A";
+                                                             break;
+                                                         case 2:
+                                                             suffix = "\u2798";
+                                                             break;
+                                                         default:
+                                                             suffix = ""
+                                                             break;
+                                                         }
+                                                         return modelData+suffix;
+                                                     }
+                                                    );
+                                     }
                                  }
                             }
                         }
@@ -755,61 +947,82 @@ ApplicationWindow {
 
                             StackLayout {
                                 width: parent.width
-                                height: parent.height-searchResultBar.height-statusBar.height*1.2
+                                height: parent.height-searchResultBar.height-statusBar.height*1.4
                                 currentIndex: searchResultBar.currentIndex
                                 Rectangle {
                                     anchors.fill: parent
                                     color: Qt.rgba(0,0,0,0)
                                     Flickable {
+                                        maximumFlickVelocity: 800
                                         clip: true
                                         anchors.top: parent.top
                                         anchors.topMargin: searchResultBar.height*0.3
                                         anchors.fill: parent
                                         contentWidth: parent.width
-                                        contentHeight: searchResultBox.height
+                                        contentHeight: searchAllResultBox.height
                                         ScrollBar.vertical: ScrollBar{}
-
-                                        Component.onCompleted: {
-                                            console.log("flickable height", height);
-                                            console.log("flickable contentHeight", contentHeight);
+                                        Column {
+                                            id: searchAllResultBox
+                                            width: parent.width
                                         }
 
+                                    }
+                                }
+                                Rectangle {
+                                    anchors.fill: parent
+                                    color: Qt.rgba(0,0,0,0)
+                                    Flickable {
+                                        maximumFlickVelocity: 800
+                                        clip: true
+                                        anchors.top: parent.top
+                                        anchors.topMargin: searchResultBar.height*0.3
+                                        anchors.fill: parent
+                                        contentWidth: parent.width
+                                        contentHeight: searchSchoolResultBox.height
+                                        ScrollBar.vertical: ScrollBar{}
                                         Column {
-                                            id: searchResultBox
+                                            id: searchSchoolResultBox
                                             width: parent.width
-                                            ClassResultTab {
-                                                width: parent.width
-                                                height: searchResultBar.height*2.4
 
-                                                schoolText.text: "computer&science"
-                                                instructorText.text: "asdf"
-                                                numberText.text: "U231212"
-                                                gradeText.text: "3"
-                                                cntText.text: "23"
-                                            }
+                                        }
 
-                                            DonorResultTab {
-                                                width: parent.width
-                                                height: searchResultBar.height*2.4
+                                    }
+                                }
+                                Rectangle {
+                                    anchors.fill: parent
+                                    color: Qt.rgba(0,0,0,0)
+                                    Flickable {
+                                        maximumFlickVelocity: 800
+                                        clip: true
+                                        anchors.top: parent.top
+                                        anchors.topMargin: searchResultBar.height*0.3
+                                        anchors.fill: parent
+                                        contentWidth: parent.width
+                                        contentHeight: searchClassResultBox.height
+                                        ScrollBar.vertical: ScrollBar{}
+                                        Column {
+                                            id: searchClassResultBox
+                                            width: parent.width
 
-                                                nameText.text: "penguin"
-                                                idText.text: "U293929"
-                                                genderText.text: "f"
-                                                ageText.text: "12"
-                                                amountText.text: "212"
-                                            }
+                                        }
 
-                                            Repeater {
-                                                model: 10
-                                                SchoolResultTab {
-                                                    width: parent.width
-                                                    height: searchResultBar.height*1.4
-                                                    nameText.text: "computer&science"
-                                                    principalText.text: "adfsafs"
-                                                    teleText.text: "123123"
-                                                }
-                                            }
-
+                                    }
+                                }
+                                Rectangle {
+                                    anchors.fill: parent
+                                    color: Qt.rgba(0,0,0,0)
+                                    Flickable {
+                                        maximumFlickVelocity: 800
+                                        clip: true
+                                        anchors.top: parent.top
+                                        anchors.topMargin: searchResultBar.height*0.3
+                                        anchors.fill: parent
+                                        contentWidth: parent.width
+                                        contentHeight: searchDonorResultBox.height
+                                        ScrollBar.vertical: ScrollBar{}
+                                        Column {
+                                            id: searchDonorResultBox
+                                            width: parent.width
                                         }
 
                                     }
@@ -821,6 +1034,14 @@ ApplicationWindow {
                 }
             }
 
+        }
+    }
+
+    function updateIndices() {
+        if (mainFrame.currentIndex === 2 && indices.needUpdate) {
+            SearchResult.destroyAll();
+            indices.build_index(treeModel.getList());
+            indices.needUpdate = false;
         }
     }
 
@@ -946,6 +1167,7 @@ ApplicationWindow {
                                     treeModel.setSchoolData(index, inputs[1], "principal");
                                     treeModel.setSchoolData(index, inputs[2], "tele");
                                     treeSchoolPopup.close();
+                                    updateIndices();
                                 }
                             }
 
@@ -1113,7 +1335,7 @@ ApplicationWindow {
                                     treeModel.setClassData(index, Number(inputs[3]), "grade");
                                     treeModel.setClassData(index, Number(inputs[4]), "studentCnt");
                                     treeClassPopup.close();
-
+                                    updateIndices();
                                 }
                             }
 

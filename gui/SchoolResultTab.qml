@@ -1,9 +1,10 @@
 import QtQuick 2.7
-
+import QtQml.Models 2.3
 Button {
     property alias nameText: nameText
     property alias principalText: principalText
     property alias teleText: telephoneText
+    property int schoolIndex: 0
     contentItem: Rectangle {
         clip: true
         color: Qt.rgba(0,0,0,0)
@@ -36,4 +37,9 @@ Button {
         }
     }
     cursorShape: Qt.PointingHandCursor
+    onClicked: {
+        var school = treeModel.index(schoolIndex, 0);
+
+        leftSideViewSelection.setCurrentIndex(school, ItemSelectionModel.ClearAndSelect);
+    }
 }
