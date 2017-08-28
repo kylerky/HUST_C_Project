@@ -6,6 +6,7 @@ import QtQuick.Controls 2.2
 import QtQuick.Controls.Material 2.2
 import QtQml.Models 2.3
 import "createSearchResults.js" as SearchResult
+import "createRankResults.js" as RankResult
 import "."
 import hust.kyle 1.0
 
@@ -39,6 +40,54 @@ ApplicationWindow {
         }
     }
 
+    function updateData() {
+        updateIndices();
+        updateAnalyses();
+    }
+    function updateAnalyses() {
+        var results;
+        if (mainFrame.currentIndex === 1 && analysesSection.needUpdate) {
+            RankResult.destroyAll();
+            results = Analyze.get(treeModel.getList());
+            for (var i = 0; i !== results.schools.length; ++i) {
+                if (Number(results.schools[i].index) === 0) continue;
+                var school = results.schools[i];
+                RankResult.createSchoolRank(
+                                            schoolAmountRank,
+                                            schoolAmountRank.width,
+                                            analysesSectionBar.height*2.6,
+                                            school.name,
+                                            school.count,
+                                            Number(school.amount)/100,
+                                            school.index
+                                            );
+            }
+
+            for (var i = 0; i !== results.grades.length; ++i) {
+                var grade = results.grades[i];
+                RankResult.createGradeResult(
+                                             gradePercentRank,
+                                             gradePercentRank.width,
+                                             analysesSectionBar.height*2.6,
+                                             grade.grade,
+                                             grade.count,
+                                             grade.total,
+                                             (Number(grade.percentage)*100).toFixed(2).toString()+"%",
+                                             Number(grade.amount)/100
+                                            );
+            }
+
+            analysesSection.needUpdate = false;
+        }
+
+    }
+    function updateIndices() {
+        if (mainFrame.currentIndex === 2 && indices.needUpdate) {
+            SearchResult.destroyAll();
+            indices.build_index(treeModel.getList());
+            indices.needUpdate = false;
+        }
+    }
     Component.onCompleted: {
         treeModel.readAll();
         if (treeModel.rowCount() === 0) {
@@ -188,6 +237,7 @@ ApplicationWindow {
                                 id: treeModel
                                 onDataChanged: {
                                     indices.needUpdate = true;
+                                    analysesSection.needUpdate = true;
                                 }
                             }
 
@@ -346,6 +396,7 @@ ApplicationWindow {
                                 id: tableModel
                                 onDataChanged: {
                                     indices.needUpdate = true;
+                                    analysesSection.needUpdate = true;
                                 }
                             }
 
@@ -637,7 +688,65 @@ ApplicationWindow {
 
                     Rectangle {
                         anchors.fill: parent
-                        color: "red"
+                        color: Qt.rgba(0,0,0,0)
+                        Material.foreground: "#6e6e6e"
+
+                        Component.onCompleted: {
+                            RankResult.createComponents();
+                        }
+
+                        onVisibleChanged: updateAnalyses();
+                        Rectangle {
+                            color: Qt.rgba(0,0,0,0)
+                            height: parent.height
+                            width: parent.width*0.9
+                            anchors.centerIn: parent
+                            property bool needUpdate: true
+                            id: analysesSection
+                            TabBar {
+                                id: analysesSectionBar
+                                width: parent.width
+                                Repeater {
+                                    model: [
+                                        qsTr("School"),
+                                        qsTr("Grade")
+                                    ]
+                                    TabButton {
+                                        text: modelData
+                                    }
+                                }
+
+                            }
+                            StackLayout {
+                                anchors.top: analysesSectionBar.bottom
+                                width: parent.width
+                                height: parent.height - analysesSectionBar.height
+                                currentIndex: analysesSectionBar.currentIndex
+                                Flickable {
+                                    maximumFlickVelocity: 800
+                                    clip: true
+                                    anchors.fill: parent
+                                    contentWidth: parent.width
+                                    contentHeight: schoolAmountRank.height
+                                    ScrollBar.vertical: ScrollBar{}
+                                    Column {
+                                        id: schoolAmountRank
+                                        width: parent.width
+                                    }
+                                }
+                                Flickable {
+                                    maximumFlickVelocity: 800
+                                    clip: true
+                                    anchors.fill: parent
+                                    contentWidth: parent.width
+                                    contentHeight: gradePercentRank.height
+                                    Column {
+                                        id: gradePercentRank
+                                        width: parent.width
+                                    }
+                                }
+                            }
+                        }
                     }
 
                     Rectangle {
@@ -1037,14 +1146,6 @@ ApplicationWindow {
         }
     }
 
-    function updateIndices() {
-        if (mainFrame.currentIndex === 2 && indices.needUpdate) {
-            SearchResult.destroyAll();
-            indices.build_index(treeModel.getList());
-            indices.needUpdate = false;
-        }
-    }
-
     Popup {
             background: Rectangle {
                 color: "#ffffff"
@@ -1167,7 +1268,7 @@ ApplicationWindow {
                                     treeModel.setSchoolData(index, inputs[1], "principal");
                                     treeModel.setSchoolData(index, inputs[2], "tele");
                                     treeSchoolPopup.close();
-                                    updateIndices();
+                                    updateData();
                                 }
                             }
 
@@ -1335,7 +1436,7 @@ ApplicationWindow {
                                     treeModel.setClassData(index, Number(inputs[3]), "grade");
                                     treeModel.setClassData(index, Number(inputs[4]), "studentCnt");
                                     treeClassPopup.close();
-                                    updateIndices();
+                                    updateData();
                                 }
                             }
 

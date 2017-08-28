@@ -473,6 +473,7 @@ bool TreeModel::readAll() {
         setSchoolData(modelIndexSchool, QString(school.principal), "principal");
         setSchoolData(modelIndexSchool, QString(school.tele), "tele");
         getItem(modelIndexSchool)->setIndex(index_school);
+        m_schoolCnt = std::max(m_schoolCnt, index_school);
 
         int pos_class = 0;
         for (unsigned long i = 0; i != size; ++i) {
@@ -511,6 +512,7 @@ bool TreeModel::readAll() {
 
             TreeItem *classItem = getItem(modelIndexClass);
             classItem->setIndex(index_class);
+            m_classCnt = std::max(m_classCnt, index_class);
 
             List *donors = &reinterpret_cast<struct Classes *>(classItem->data())->donors;
 

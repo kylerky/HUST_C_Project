@@ -10,14 +10,23 @@
 #include "treemodel.hpp"
 #include "launcherrmsg.hpp"
 #include "indexmap.hpp"
+#include "analyze.hpp"
 
-inline static QObject *launch_err_singletontype_provider(QQmlEngine *engine, QJSEngine *scriptEngine) {
+namespace {
+inline QObject *launch_err_singletontype_provider(QQmlEngine *engine, QJSEngine *scriptEngine) {
     Q_UNUSED(engine);
     Q_UNUSED(scriptEngine);
 
     return new HUST_C::LaunchErrMsg();
 }
 
+inline QObject *analyze_singletontype_provider(QQmlEngine *engine, QJSEngine *scriptEngine) {
+    Q_UNUSED(engine);
+    Q_UNUSED(scriptEngine);
+
+    return new HUST_C::Analyze();
+}
+}
 
 int main(int argc, char *argv[]) {
     QQuickStyle::setStyle("Material");
@@ -26,6 +35,8 @@ int main(int argc, char *argv[]) {
     qmlRegisterType<HUST_C::TreeModel>("hust.kyle", 1, 0, "TreeModel");
     qmlRegisterType<HUST_C::TableModel>("hust.kyle", 1, 0, "TableModel");
     qmlRegisterType<HUST_C::IndexMap>("hust.kyle", 1, 0, "IndexMap");
+
+    qmlRegisterSingletonType<HUST_C::Analyze>("hust.kyle", 1, 0, "Analyze", analyze_singletontype_provider);
 
     QQmlApplicationEngine engine;
 

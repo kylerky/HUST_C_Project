@@ -153,70 +153,71 @@ QModelIndex TableModel::parent(const QModelIndex &child) const {
     Q_UNUSED(child);
     return QModelIndex();
 }
-
-static inline int name_less(void *left, void *right) {
+namespace {
+inline int name_less(void *left, void *right) {
     Donor *lhs = reinterpret_cast<Donor*>(left);
     Donor *rhs = reinterpret_cast<Donor*>(right);
 
     return std::strcmp(lhs->name, rhs->name) < 0;
 }
-static inline int name_more(void *left, void *right) {
+inline int name_more(void *left, void *right) {
     Donor *lhs = reinterpret_cast<Donor*>(left);
     Donor *rhs = reinterpret_cast<Donor*>(right);
 
     return std::strcmp(lhs->name, rhs->name) > 0;
 }
 
-static inline int id_less(void *left, void *right) {
+inline int id_less(void *left, void *right) {
     Donor *lhs = reinterpret_cast<Donor*>(left);
     Donor *rhs = reinterpret_cast<Donor*>(right);
 
     return std::strcmp(lhs->id, rhs->id) < 0;
 }
-static inline int id_more(void *left, void *right) {
+inline int id_more(void *left, void *right) {
     Donor *lhs = reinterpret_cast<Donor*>(left);
     Donor *rhs = reinterpret_cast<Donor*>(right);
 
     return std::strcmp(lhs->id, rhs->id) > 0;
 }
 
-static inline int sex_less(void *left, void *right) {
+inline int sex_less(void *left, void *right) {
     Donor *lhs = reinterpret_cast<Donor*>(left);
     Donor *rhs = reinterpret_cast<Donor*>(right);
 
     return lhs->sex < rhs->sex;
 }
-static inline int sex_more(void *left, void *right) {
+inline int sex_more(void *left, void *right) {
     Donor *lhs = reinterpret_cast<Donor*>(left);
     Donor *rhs = reinterpret_cast<Donor*>(right);
 
     return lhs->sex > rhs->sex;
 }
 
-static inline int age_less(void *left, void *right) {
+inline int age_less(void *left, void *right) {
     Donor *lhs = reinterpret_cast<Donor*>(left);
     Donor *rhs = reinterpret_cast<Donor*>(right);
 
     return lhs->age < rhs->age;
 }
-static inline int age_more(void *left, void *right) {
+inline int age_more(void *left, void *right) {
     Donor *lhs = reinterpret_cast<Donor*>(left);
     Donor *rhs = reinterpret_cast<Donor*>(right);
 
     return lhs->age > rhs->age;
 }
 
-static inline int amount_less(void *left, void *right) {
+inline int amount_less(void *left, void *right) {
     Donor *lhs = reinterpret_cast<Donor*>(left);
     Donor *rhs = reinterpret_cast<Donor*>(right);
 
     return lhs->amount < rhs->amount;
 }
-static inline int amount_more(void *left, void *right) {
+inline int amount_more(void *left, void *right) {
     Donor *lhs = reinterpret_cast<Donor*>(left);
     Donor *rhs = reinterpret_cast<Donor*>(right);
 
     return lhs->amount > rhs->amount;
+}
 }
 
 void TableModel::sort_table(const QString &role, bool ascend) {

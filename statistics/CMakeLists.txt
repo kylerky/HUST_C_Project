@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.1.0)
-project(index)
+project(statistics)
 
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
@@ -9,6 +9,6 @@ include_directories(../clist)
 
 find_package(Qt5Core)
 
-add_library(indexmap indexmap.cpp)
+add_library(statistics analyze.cpp)
 
-target_link_libraries(indexmap Qt5::Core)
+target_link_libraries(statistics Qt5::Core)

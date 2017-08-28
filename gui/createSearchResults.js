@@ -12,19 +12,19 @@ function createComponents() {
     if (classComponent.status === Component.Ready)
         finishCreation(classComponent, 0);
     else
-        classComponent.statusChanged.connect(finishCreation.bind(null, classComponent, classReady));
+        classComponent.statusChanged.connect(finishCreation.bind(null, classComponent));
 
     schoolComponent = Qt.createComponent("SchoolResultTab.qml");
     if (schoolComponent.status === Component.Ready)
         finishCreation(schoolComponent, 1);
     else
-        schoolComponent.statusChanged.connect(finishCreation.bind(null, schoolComponent, schoolReady));
+        schoolComponent.statusChanged.connect(finishCreation.bind(null, schoolComponent));
 
     donorComponent = Qt.createComponent("DonorResultTab.qml");
     if (donorComponent.status === Component.Ready)
         finishCreation(donorComponent, 2);
     else
-        donorComponent.statusChanged.connect(finishCreation.bind(null, donorComponent, donorReady));
+        donorComponent.statusChanged.connect(finishCreation.bind(null, donorComponent));
 }
 
 function finishCreation(component, indicator) {
@@ -39,7 +39,6 @@ function finishCreation(component, indicator) {
 function createClassResult(parent, width, height, school, instructor, number, grade, count, schoolIndex, classIndex) {
     if (!ready[0]) return false;
 
-    var index = 1;
     var obj = classComponent.createObject(parent, {
                                                      "height": height,
                                                      "width": width,

@@ -9,5 +9,8 @@
         <file>ClassResultTab.qml</file>
         <file>DonorResultTab.qml</file>
         <file>createSearchResults.js</file>
+        <file>SchoolRankTab.qml</file>
+        <file>createRankResults.js</file>
+        <file>GradeRankTab.qml</file>
     </qresource>
 </RCC>
