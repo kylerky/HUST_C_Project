@@ -1393,6 +1393,7 @@ ApplicationWindow {
                                 highlighted: true
 //                                Material.background: Material.Teal
                                 text: treeClassPopup.isAdd ? qsTr("Add") : qsTr("Edit")
+                                cursorShape: Qt.PointingHandCursor
                                 onClicked: {
                                     var inputs = [];
                                     for (var i = 0; i !== treeClassPopupLayoutTextField.count; ++i) {
@@ -1456,7 +1457,7 @@ ApplicationWindow {
                                 onClicked: {
                                     treeClassPopup.close();
                                 }
-
+                                cursorShape: Qt.PointingHandCursor
                             }
                         }
                     }
