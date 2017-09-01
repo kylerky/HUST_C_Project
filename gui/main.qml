@@ -32,7 +32,7 @@ ApplicationWindow {
 
     Timer {
         id: treeWriteTimer
-        interval: 2000
+        interval: 300000
         repeat: true
         running: false
         onTriggered: {

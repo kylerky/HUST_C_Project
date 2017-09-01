@@ -270,7 +270,9 @@ void sort_list_p(List *list, int (*comp)(void *, void *)) {
     }
 }
 Iter_list seek_list_p(List *list, size_t index) {
+    // get the first element
     Iter_list iter = first_list(*list);
+    // find the one
     for (size_t i = 0; i != index; ++i) next_list(iter);
     return iter;
 }
