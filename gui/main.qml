@@ -229,6 +229,8 @@ ApplicationWindow {
                                     var list = treeModel.getDonors(current);
                                     tableModel.setList(list);
                                     treeModel.writeItem(previous);
+                                    editArea.state = "";
+                                    donorsTable.selection.clear();
                                 }
                             }
 
