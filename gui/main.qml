@@ -292,7 +292,7 @@ ApplicationWindow {
                                                 color: styleData.selected?"#616161":"#8e8e8e"
                                             }
                                             text: "edit"
-
+                                            propagateComposedEvents: true
                                             Component.onCompleted: {
                                                 if (model !== null && model.index === 0)
                                                     visible = false;
@@ -324,6 +324,8 @@ ApplicationWindow {
                                                     treeSchoolPopup.open();
                                                     break;
                                                 }
+                                                leftSideViewSelection.setCurrentIndex(styleData.index, ItemSelectionModel.ClearAndSelect);
+
                                             }
                                         }
                                     }
