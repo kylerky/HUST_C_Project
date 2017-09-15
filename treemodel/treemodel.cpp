@@ -5,11 +5,11 @@ extern "C" {
 #include "list.h"
 }
 
-#include <sstream>
 #include <QThread>
-#include <cstring>
 #include <cstdio>
+#include <cstring>
 #include <iostream>
+#include <sstream>
 
 namespace HUST_C {
 

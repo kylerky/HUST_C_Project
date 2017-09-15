@@ -680,7 +680,9 @@ ApplicationWindow {
                                                     tableModel.remove(row-cnt);
                                                     ++cnt;
                                                 }
-                                            )
+                                            );
+                                            editArea.state = "";
+                                            donorsTable.selection.clear();
                                         }
                                     }
                                 }
