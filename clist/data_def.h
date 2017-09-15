@@ -14,11 +14,7 @@
  * @members
  *      name       the name of the school
  *      principal  the principal of the school
-<<<<<<< HEAD
  *      tele       the telephone number of the schoo
-=======
- *      tele       the telephone number of the school
->>>>>>> small fix
  *      classes    the classes of the school
 */
 struct School {
@@ -56,11 +52,7 @@ struct Classes {
  * @members
  *      name        the name of the donor
  *      id          the id of the donor
-<<<<<<< HEAD
  *      sex         the sex of the donor (0 for male, 1 for female, 2 for X)
-=======
- *      sex         the sex of the donor (m for male, f for female, x for others)
->>>>>>> small fix
  *      age         the age of the donor
  *      amount      the amount of money the donor donated
  *

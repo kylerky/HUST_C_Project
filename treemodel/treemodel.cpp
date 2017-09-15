@@ -5,19 +5,11 @@ extern "C" {
 #include "list.h"
 }
 
-<<<<<<< HEAD
 #include <sstream>
 #include <QThread>
 #include <cstring>
 #include <cstdio>
 #include <iostream>
-=======
-#include <QThread>
-#include <cstdio>
-#include <cstring>
-#include <iostream>
-#include <sstream>
->>>>>>> small fix
 
 namespace HUST_C {
 
@@ -89,12 +81,7 @@ QVariant TreeModel::getDonors(const QModelIndex &index) const {
 
 QVariant TreeModel::getList() const {
     QVariant val;
-<<<<<<< HEAD
     val.setValue(&reinterpret_cast<struct School *>(m_rootItem->data())->classes);
-=======
-    val.setValue(
-        &reinterpret_cast<struct School *>(m_rootItem->data())->classes);
->>>>>>> small fix
 
     return val;
 }
@@ -298,14 +285,8 @@ bool TreeModel::writeItem(const QModelIndex &index) {
     if (m_validPtrs.count(item) != 1) return false;
     if (typeid(*item) != typeid(ClassTreeItem)) return false;
 
-<<<<<<< HEAD
     ClassTreeItem *classItem = dynamic_cast<ClassTreeItem*>(item);
     SchoolTreeItem *schoolItem  = dynamic_cast<SchoolTreeItem*>(classItem->parent());
-=======
-    ClassTreeItem *classItem = dynamic_cast<ClassTreeItem *>(item);
-    SchoolTreeItem *schoolItem =
-        dynamic_cast<SchoolTreeItem *>(classItem->parent());
->>>>>>> small fix
 
     // set/get indexes
     if (!classItem->getIndex()) {
@@ -323,11 +304,7 @@ bool TreeModel::writeItem(const QModelIndex &index) {
 
     // get the list
     QVariant listVar = getDonors(index);
-<<<<<<< HEAD
     List *donors = listVar.value<List*>();
-=======
-    List *donors = listVar.value<List *>();
->>>>>>> small fix
 
     if (!donors) return false;
 
@@ -342,19 +319,11 @@ bool TreeModel::writeItem(const QModelIndex &index) {
     Iter_list iter = first_list(*donors);
     while (iter) {
         // write to disk one by one
-<<<<<<< HEAD
         Donor *donor = reinterpret_cast<Donor*>(iter->data);
 
         char data[32];
         std::memcpy(data, &donor->name, 20);
         std::memcpy(data+20, &donor->id, 11);
-=======
-        Donor *donor = reinterpret_cast<Donor *>(iter->data);
-
-        char data[32];
-        std::memcpy(data, &donor->name, 20);
-        std::memcpy(data + 20, &donor->id, 11);
->>>>>>> small fix
         data[31] = donor->sex;
 
         if (std::fwrite(data, sizeof(data), 1, fp) != 1) {
@@ -386,33 +355,16 @@ bool TreeModel::writeItem(const QModelIndex &index) {
 
 bool TreeModel::writeTree() {
     FILE *fp = std::fopen("tree.bin", "wb");
-<<<<<<< HEAD
 
     for (auto child_school = m_rootItem->child_cbeg(); child_school != m_rootItem->child_cend(); ++child_school) {
         // the schools part
         struct School *school = reinterpret_cast<struct School*>((*child_school)->data());
-=======
-    if (!fp) {
-        std::cerr << "failed to open file tree.bin" << std::endl;
-        return false;
-    }
-    for (auto child_school = m_rootItem->child_cbeg();
-         child_school != m_rootItem->child_cend(); ++child_school) {
-        // the schools part
-        struct School *school =
-            reinterpret_cast<struct School *>((*child_school)->data());
->>>>>>> small fix
 
         // fit all the data in an array
         char data_sc[70];
         std::memcpy(data_sc, &school->name, 30);
-<<<<<<< HEAD
         std::memcpy(data_sc+30, &school->principal, 20);
         std::memcpy(data_sc+50, &school->tele, 20);
-=======
-        std::memcpy(data_sc + 30, &school->principal, 20);
-        std::memcpy(data_sc + 50, &school->tele, 20);
->>>>>>> small fix
 
         // write the data
         if (std::fwrite(data_sc, sizeof(data_sc), 1, fp) != 1) {
@@ -444,22 +396,13 @@ bool TreeModel::writeTree() {
         auto child_class = (*child_school)->child_cbeg();
         Iter_list iter_cl = first_list(school->classes);
         while (iter_cl) {
-<<<<<<< HEAD
             Classes *unit = reinterpret_cast<Classes*>(iter_cl->data);
-=======
-            Classes *unit = reinterpret_cast<Classes *>(iter_cl->data);
->>>>>>> small fix
 
             // fit all the data in an array
             char data_cl[70];
             std::memcpy(data_cl, &unit->school, 30);
-<<<<<<< HEAD
             std::memcpy(data_cl+30, &unit->instructor, 30);
             std::memcpy(data_cl+60, &unit->number, 10);
-=======
-            std::memcpy(data_cl + 30, &unit->instructor, 30);
-            std::memcpy(data_cl + 60, &unit->number, 10);
->>>>>>> small fix
 
             if (std::fwrite(data_cl, sizeof(data_cl), 1, fp) != 1) {
                 std::cerr << "cannot write all the data to disk" << std::endl;
@@ -515,21 +458,12 @@ bool TreeModel::readAll() {
     while (std::fread(data_sc, sizeof(data_sc), 1, tree_fp) == 1) {
         struct School school;
         std::memcpy(&school.name, data_sc, sizeof(school.name));
-<<<<<<< HEAD
         std::memcpy(&school.principal, data_sc+30, sizeof(school.principal));
         std::memcpy(&school.tele, data_sc+50, sizeof(school.tele));
 
         uint32_t size, index_school;
         std::memcpy(&size, data_sc+70, sizeof(size));
         std::memcpy(&index_school, data_sc+74, sizeof(index_school));
-=======
-        std::memcpy(&school.principal, data_sc + 30, sizeof(school.principal));
-        std::memcpy(&school.tele, data_sc + 50, sizeof(school.tele));
-
-        uint32_t size, index_school;
-        std::memcpy(&size, data_sc + 70, sizeof(size));
-        std::memcpy(&index_school, data_sc + 74, sizeof(index_school));
->>>>>>> small fix
 
         insertRows(pos_school, 1);
         QModelIndex modelIndexSchool = index(pos_school, 0);
@@ -553,44 +487,25 @@ bool TreeModel::readAll() {
 
             struct Classes cl_item;
             std::memcpy(&cl_item.school, data_cl, sizeof(cl_item.school));
-<<<<<<< HEAD
             std::memcpy(&cl_item.instructor, data_cl+30, sizeof(cl_item.instructor));
             std::memcpy(&cl_item.number, data_cl+60, sizeof(cl_item.number));
 
             int16_t grade, student_cnt;
             std::memcpy(&grade, data_cl+70, sizeof(grade));
             std::memcpy(&student_cnt, data_cl+72, sizeof(student_cnt));
-=======
-            std::memcpy(&cl_item.instructor, data_cl + 30,
-                        sizeof(cl_item.instructor));
-            std::memcpy(&cl_item.number, data_cl + 60, sizeof(cl_item.number));
-
-            int16_t grade, student_cnt;
-            std::memcpy(&grade, data_cl + 70, sizeof(grade));
-            std::memcpy(&student_cnt, data_cl + 72, sizeof(student_cnt));
->>>>>>> small fix
 
             cl_item.grade = grade;
             cl_item.student_cnt = student_cnt;
 
             uint32_t index_class;
-<<<<<<< HEAD
             std::memcpy(&index_class, data_cl+74, sizeof(index_class));
-=======
-            std::memcpy(&index_class, data_cl + 74, sizeof(index_class));
->>>>>>> small fix
 
             insertRows(pos_class, 1, modelIndexSchool);
             QModelIndex modelIndexClass = index(pos_class, 1, modelIndexSchool);
             ++pos_class;
 
             setClassData(modelIndexClass, QString(cl_item.school), "school");
-<<<<<<< HEAD
             setClassData(modelIndexClass, QString(cl_item.instructor), "instructor");
-=======
-            setClassData(modelIndexClass, QString(cl_item.instructor),
-                         "instructor");
->>>>>>> small fix
             setClassData(modelIndexClass, QString(cl_item.number), "number");
             setClassData(modelIndexClass, cl_item.grade, "grade");
             setClassData(modelIndexClass, cl_item.student_cnt, "studentCnt");
@@ -599,18 +514,12 @@ bool TreeModel::readAll() {
             classItem->setIndex(index_class);
             m_classCnt = std::max(m_classCnt, index_class);
 
-<<<<<<< HEAD
             List *donors = &reinterpret_cast<struct Classes *>(classItem->data())->donors;
-=======
-            List *donors =
-                &reinterpret_cast<struct Classes *>(classItem->data())->donors;
->>>>>>> small fix
 
             std::ostringstream fname;
             fname << index_school << "-" << index_class << ".bin";
 
             FILE *donor_fp = std::fopen(fname.str().data(), "rb");
-<<<<<<< HEAD
             if (!donor_fp)
                 continue;
 
@@ -620,43 +529,22 @@ bool TreeModel::readAll() {
                 struct Donor donor;
                 std::memcpy(&donor.name, data_donor, sizeof(donor.name));
                 std::memcpy(&donor.id, data_donor+20, sizeof(donor.id));
-=======
-            if (!donor_fp) continue;
-
-            char data_donor[38];
-            while (std::fread(data_donor, sizeof(data_donor), 1, donor_fp) ==
-                   1) {
-                struct Donor donor;
-                std::memcpy(&donor.name, data_donor, sizeof(donor.name));
-                std::memcpy(&donor.id, data_donor + 20, sizeof(donor.id));
->>>>>>> small fix
                 donor.sex = data_donor[31];
 
                 int16_t age;
                 uint32_t amount;
-<<<<<<< HEAD
                 std::memcpy(&age, data_donor+32, sizeof(age));
                 std::memcpy(&amount, data_donor+34, sizeof(amount));
-=======
-                std::memcpy(&age, data_donor + 32, sizeof(age));
-                std::memcpy(&amount, data_donor + 34, sizeof(amount));
->>>>>>> small fix
 
                 donor.age = age;
                 donor.amount = amount;
 
                 insert_before_list(*donors, NULL, &donor);
-<<<<<<< HEAD
 
             }
 
             if (std::ferror(donor_fp))
                 std::perror("failed to read donor");
-=======
-            }
-
-            if (std::ferror(donor_fp)) std::perror("failed to read donor");
->>>>>>> small fix
 
             std::fclose(donor_fp);
         }

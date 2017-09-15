@@ -680,13 +680,7 @@ ApplicationWindow {
                                                     tableModel.remove(row-cnt);
                                                     ++cnt;
                                                 }
-<<<<<<< HEAD
                                             )
-=======
-                                            );
-                                            editArea.state = "";
-                                            donorsTable.selection.clear();
->>>>>>> small fix
                                         }
                                     }
                                 }

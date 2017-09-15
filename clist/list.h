@@ -53,11 +53,7 @@ struct List {
  * @param
  *          node    the iterator to be increased
 */
-<<<<<<< HEAD
 #define next_list(node) (node) = (node)->next
-=======
-#define next_list(node) ((node) = (node)->next)
->>>>>>> small fix
 
 /*
  * first_list
@@ -69,11 +65,7 @@ struct List {
  * @return
  *          the iterator positioned at the first elment
 */
-<<<<<<< HEAD
 #define first_list(list) (list).head->next
-=======
-#define first_list(list) ((list).head->next)
->>>>>>> small fix
 
 // create
 
